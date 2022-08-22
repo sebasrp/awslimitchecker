@@ -10,10 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func Gets3Limits() {
+func Gets3Limits(awsprofile string, region string) {
+	fmt.Printf("AWS profile: %s | AWS region: %s", awsprofile, region)
+
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String("us-east-1"),
-		Credentials: credentials.NewSharedCredentials("", "pd-staging")},
+		Region:      aws.String(region),
+		Credentials: credentials.NewSharedCredentials("", awsprofile)},
 	)
 
 	// Create S3 service client

@@ -10,7 +10,9 @@ import (
 
 var (
 	// Used for flags.
-	cfgFile string
+	cfgFile    string
+	region     string
+	awsprofile string
 
 	rootCmd = &cobra.Command{
 		Use:   "awslimitchecker",
@@ -38,7 +40,14 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	// fmt.Println("flag")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.awslimitchecker.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.awslimitchecker.yaml)")
+	rootCmd.PersistentFlags().StringVar(&awsprofile, "awsprofile", "", "aws profile to use (default `default`)")
+	rootCmd.PersistentFlags().StringVar(&region, "region", "", "region to evaluate (default `us-east-1`)")
+
+	viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
+	viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
+	viper.SetDefault("awsprofile", "default")
+	viper.SetDefault("region", "us-east-1")
 }
 
 func initConfig() {
@@ -60,5 +69,6 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		fmt.Println("Keys retrieved from file: ", viper.AllKeys())
 	}
 }
