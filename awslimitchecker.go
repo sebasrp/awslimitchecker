@@ -10,8 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func Gets3Limits(awsprofile string, region string) {
-	fmt.Printf("AWS profile: %s | AWS region: %s", awsprofile, region)
+var SupportedAwsServices = map[string]bool{
+	"s3": true,
+}
+
+func GetLimits(awsService string, awsprofile string, region string) {
+	fmt.Printf("AWS profile: %s | AWS region: %s | service: %s", awsprofile, region, awsService)
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
@@ -32,6 +36,10 @@ func Gets3Limits(awsprofile string, region string) {
 		fmt.Printf("* %s created on %s\n",
 			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
 	}
+}
+
+func IsValidAwsService(service string) bool {
+	return SupportedAwsServices[service] || service == "all"
 }
 
 func exitErrorf(msg string, args ...interface{}) {
