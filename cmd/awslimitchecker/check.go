@@ -24,7 +24,7 @@ var check = &cobra.Command{
 		if !awslimitchecker.IsValidAwsService(args[0]) {
 			return fmt.Errorf("invalid aws service provided: %s", args[0])
 		}
-		return fmt.Errorf("invalid aws service specified: %s", args[0])
+		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		awslimitchecker.GetLimits(args[0], viper.GetString("awsprofile"), viper.GetString("region"))
