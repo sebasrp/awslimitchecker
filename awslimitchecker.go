@@ -12,7 +12,8 @@ import (
 )
 
 var SupportedAwsServices = map[string]func(session session.Session, quotaClient *servicequotas.ServiceQuotas) (ret []services.AWSQuotaInfo){
-	"s3": GetS3Usage,
+	"s3":      GetS3Usage,
+	"kinesis": GetKinesisUsage,
 }
 
 func createAwsSession(awsprofile string, region string) session.Session {
@@ -44,6 +45,12 @@ func GetLimits(awsService string, awsprofile string, region string) {
 func GetS3Usage(session session.Session, quotaClient *servicequotas.ServiceQuotas) (ret []services.AWSQuotaInfo) {
 	s3checker := services.NewS3Checker(session, quotaClient)
 	ret = s3checker.GetUsage()
+	return
+}
+
+func GetKinesisUsage(session session.Session, quotaClient *servicequotas.ServiceQuotas) (ret []services.AWSQuotaInfo) {
+	kinesischecker := services.NewKinesisChecker(session, quotaClient)
+	ret = kinesischecker.GetUsage()
 	return
 }
 
