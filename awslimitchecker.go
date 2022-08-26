@@ -7,34 +7,34 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/servicequotas"
+	"github.com/sebasrp/awslimitchecker/internal/services"
 )
 
 var SupportedAwsServices = map[string]bool{
 	"s3": true,
 }
 
-func GetLimits(awsService string, awsprofile string, region string) {
-	fmt.Printf("AWS profile: %s | AWS region: %s | service: %s", awsprofile, region, awsService)
-
+func createAwsSession(awsprofile string, region string) session.Session {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
 		Credentials: credentials.NewSharedCredentials("", awsprofile)},
 	)
-
-	// Create S3 service client
-	svc := s3.New(sess)
-
-	result, err := svc.ListBuckets(nil)
 	if err != nil {
-		exitErrorf("Unable to list buckets, %v", err)
+		exitErrorf("Unable to create AWS session, %v", err)
 	}
+	return *sess
+}
 
-	fmt.Println("Buckets:")
-
-	for _, b := range result.Buckets {
-		fmt.Printf("* %s created on %s\n",
-			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
+func GetLimits(awsService string, awsprofile string, region string) {
+	fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsprofile, region, awsService)
+	session := createAwsSession(awsprofile, region)
+	quotaClient := servicequotas.New(&session)
+	s3checker := services.NewS3Checker(session, quotaClient)
+	usage := s3checker.GetUsage()
+	for _, u := range usage {
+		fmt.Printf("* %s %g/%g\n",
+			u.Name, u.UsageValue, u.QuotaValue)
 	}
 }
 
