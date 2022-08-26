@@ -9,16 +9,18 @@ import (
 )
 
 type S3Checker struct {
-	serviceCode    string
-	region         string
-	client         *s3.S3
+	// serviceCode is the name of the service this checker verifies
+	serviceCode string
+	// region the checker will run against
+	region string
+	// aws client used to call kinesis service
+	client *s3.S3
+	// aws client used to call service quotas service
 	svcQuotaClient *servicequotas.ServiceQuotas
-	defaultQuotas  map[string]AWSQuotaInfo
-}
-
-// Quotas we will report on. Contains the service quota name and the func used to retrieve its usage
-var SupportedQuotas = map[string]func(S3Checker) (ret AWSQuotaInfo){
-	"Buckets": S3Checker.GetBucketUsage,
+	// the default quotas of the service
+	defaultQuotas map[string]AWSQuotaInfo
+	// supportedQuotas contains the service quota name and the func used to retrieve its usage
+	supportedQuotas map[string]func(S3Checker) (ret AWSQuotaInfo)
 }
 
 func NewS3Checker(session session.Session, svcQuota *servicequotas.ServiceQuotas) *S3Checker {
@@ -28,12 +30,14 @@ func NewS3Checker(session session.Session, svcQuota *servicequotas.ServiceQuotas
 		client:         s3.New(&session),
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]AWSQuotaInfo{},
+		supportedQuotas: map[string]func(S3Checker) (ret AWSQuotaInfo){
+			"Buckets": S3Checker.GetBucketUsage},
 	}
 	return c
 }
 
 func (c S3Checker) GetUsage() (ret []AWSQuotaInfo) {
-	for _, q := range SupportedQuotas {
+	for _, q := range c.supportedQuotas {
 		quotaInfo := q(c)
 		ret = append(ret, quotaInfo)
 	}
