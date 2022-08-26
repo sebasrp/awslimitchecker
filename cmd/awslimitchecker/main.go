@@ -69,6 +69,9 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
-		fmt.Println("Keys retrieved from file: ", viper.AllKeys())
+		fmt.Println("Configuration retrieved:")
+		for key, value := range viper.AllSettings() {
+			fmt.Printf("%s: %s\n", key, value)
+		}
 	}
 }
