@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/servicequotas"
 	"github.com/sebasrp/awslimitchecker"
 	"github.com/sebasrp/awslimitchecker/internal/services"
+	"github.com/stretchr/testify/assert"
 )
 
 func GetTestUsage(session session.Session, quotaClient *servicequotas.ServiceQuotas) (ret []services.AWSQuotaInfo) {
@@ -20,12 +21,8 @@ func TestValidateAwsServiceSuccess(t *testing.T) {
 		"foo": GetTestUsage,
 	}
 	var input = "foo"
-	var expected = true
 	var actual = awslimitchecker.IsValidAwsService(input)
-
-	if actual != expected {
-		t.Fatalf(`IsValidAwsService("%s") = %t, expected %t, nil`, input, actual, expected)
-	}
+	assert.Truef(t, actual, "%s should be valid service", input)
 }
 
 func TestValidateAwsServiceFailure(t *testing.T) {
@@ -33,12 +30,8 @@ func TestValidateAwsServiceFailure(t *testing.T) {
 		"foo": GetTestUsage,
 	}
 	var input = "bar"
-	var expected = false
 	var actual = awslimitchecker.IsValidAwsService(input)
-
-	if actual != expected {
-		t.Fatalf(`IsValidAwsService("%s") = %t, expected %t, nil`, input, actual, expected)
-	}
+	assert.Falsef(t, actual, "%s should not be valid service", input)
 }
 
 func TestValidateAwsServiceAll(t *testing.T) {
@@ -46,10 +39,7 @@ func TestValidateAwsServiceAll(t *testing.T) {
 		"foo": GetTestUsage,
 	}
 	var input = "all"
-	var expected = true
 	var actual = awslimitchecker.IsValidAwsService(input)
+	assert.Truef(t, actual, "%s should be valid service", input)
 
-	if actual != expected {
-		t.Fatalf(`IsValidAwsService("%s") = %t, expected %t, nil`, input, actual, expected)
-	}
 }
