@@ -5,7 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
+	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 )
 
 type S3Checker struct {
@@ -14,9 +16,9 @@ type S3Checker struct {
 	// region the checker will run against
 	region string
 	// aws client used to call kinesis service
-	client *s3.S3
+	client s3iface.S3API
 	// aws client used to call service quotas service
-	svcQuotaClient *servicequotas.ServiceQuotas
+	svcQuotaClient servicequotasiface.ServiceQuotasAPI
 	// the default quotas of the service
 	defaultQuotas map[string]AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage

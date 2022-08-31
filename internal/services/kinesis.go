@@ -5,7 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
+	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
+	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 )
 
 type KinesisChecker struct {
@@ -14,9 +16,9 @@ type KinesisChecker struct {
 	// region the checker will run against
 	region string
 	// aws client used to call kinesis service
-	client *kinesis.Kinesis
+	client kinesisiface.KinesisAPI
 	// aws client used to call service quotas service
-	svcQuotaClient *servicequotas.ServiceQuotas
+	svcQuotaClient servicequotasiface.ServiceQuotasAPI
 	// the default quotas of the service
 	defaultQuotas map[string]AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
