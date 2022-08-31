@@ -37,8 +37,8 @@ func GetLimits(awsService string, awsprofile string, region string) {
 		usage = append(usage, checker(session, quotaClient)...)
 	}
 	for _, u := range usage {
-		fmt.Printf("* %s %g/%g\n",
-			u.Name, u.UsageValue, u.QuotaValue)
+		fmt.Printf("* [%s] %s %g/%g\n",
+			u.Service, u.Name, u.UsageValue, u.QuotaValue)
 	}
 }
 
