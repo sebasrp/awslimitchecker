@@ -14,6 +14,7 @@ var (
 	region     string
 	awsprofile string
 	console    bool
+	csvFlag    bool
 
 	rootCmd = &cobra.Command{
 		Use:   "awslimitchecker",
@@ -45,13 +46,17 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&awsprofile, "awsprofile", "", "aws profile to use (default `default`)")
 	rootCmd.PersistentFlags().StringVar(&region, "region", "", "region to evaluate (default `us-east-1`)")
 	rootCmd.PersistentFlags().BoolVar(&console, "console", false, "output results to console")
+	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "output results to a csv file")
 
 	viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
 	viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
 	viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
+	viper.BindPFlag("csv", rootCmd.PersistentFlags().Lookup("csv"))
+
 	viper.SetDefault("awsprofile", "default")
 	viper.SetDefault("region", "us-east-1")
 	viper.SetDefault("console", false)
+	viper.SetDefault("csv", false)
 }
 
 func initConfig() {
