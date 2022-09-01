@@ -11,7 +11,7 @@ import (
 	"github.com/sebasrp/awslimitchecker/internal/services"
 )
 
-var SupportedAwsServices = map[string]func(session session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
+var SupportedAwsServices = map[string]func(session *session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
 	"s3":      services.NewS3Checker,
 	"kinesis": services.NewKinesisChecker,
 }
@@ -32,7 +32,7 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 	quotaClient := servicequotas.New(&session)
 
 	for _, checker := range SupportedAwsServices {
-		service := checker(session, quotaClient)
+		service := checker(&session, quotaClient)
 		ret = append(ret, service.GetUsage()...)
 	}
 	return

@@ -28,11 +28,11 @@ type TestChecker struct {
 	supportedQuotas map[string]func(TestChecker) (ret services.AWSQuotaInfo)
 }
 
-func NewTestChecker(session session.Session, svcQuota *servicequotas.ServiceQuotas) services.Svcquota {
+func NewTestChecker(session *session.Session, svcQuota *servicequotas.ServiceQuotas) services.Svcquota {
 	c := &TestChecker{
 		serviceCode:    "test",
 		region:         *session.Config.Region,
-		client:         kinesis.New(&session),
+		client:         kinesis.New(session),
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]services.AWSQuotaInfo{},
 		supportedQuotas: map[string]func(TestChecker) (ret services.AWSQuotaInfo){
@@ -83,7 +83,7 @@ func (c TestChecker) GetRequiredPermissions() []string {
 }
 
 func TestValidateAwsServiceSuccess(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "foo"
@@ -92,7 +92,7 @@ func TestValidateAwsServiceSuccess(t *testing.T) {
 }
 
 func TestValidateAwsServiceFailure(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "bar"
@@ -101,7 +101,7 @@ func TestValidateAwsServiceFailure(t *testing.T) {
 }
 
 func TestValidateAwsServiceAll(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "all"

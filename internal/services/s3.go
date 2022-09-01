@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -25,11 +26,11 @@ type S3Checker struct {
 	supportedQuotas map[string]func(S3Checker) (ret AWSQuotaInfo)
 }
 
-func NewS3Checker(session session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
+func NewS3Checker(session *session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
 	c := &S3Checker{
 		serviceCode:    "s3",
-		region:         *session.Config.Region,
-		client:         s3.New(&session),
+		region:         aws.StringValue(session.Config.Region),
+		client:         s3.New(session),
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]AWSQuotaInfo{},
 		supportedQuotas: map[string]func(S3Checker) (ret AWSQuotaInfo){
@@ -97,15 +98,15 @@ func (c S3Checker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
 		for _, q := range serviceQuotas {
 			quota := AWSQuotaInfo{
 				Service:    c.serviceCode,
-				Name:       *q.QuotaName,
+				Name:       aws.StringValue(q.QuotaName),
 				Region:     c.region,
-				Quotacode:  *q.QuotaCode,
-				QuotaValue: *q.Value,
+				Quotacode:  aws.StringValue(q.QuotaCode),
+				QuotaValue: aws.Float64Value(q.Value),
 				UsageValue: 0.0,
-				Unit:       *q.Unit,
-				Global:     *q.GlobalQuota,
+				Unit:       aws.StringValue(q.Unit),
+				Global:     aws.BoolValue(q.GlobalQuota),
 			}
-			c.defaultQuotas[*q.QuotaName] = quota
+			c.defaultQuotas[aws.StringValue(q.QuotaName)] = quota
 		}
 	}
 	return c.defaultQuotas

@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
@@ -25,11 +26,11 @@ type KinesisChecker struct {
 	supportedQuotas map[string]func(KinesisChecker) (ret AWSQuotaInfo)
 }
 
-func NewKinesisChecker(session session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
+func NewKinesisChecker(session *session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
 	c := &KinesisChecker{
 		serviceCode:    "kinesis",
-		region:         *session.Config.Region,
-		client:         kinesis.New(&session),
+		region:         aws.StringValue(session.Config.Region),
+		client:         kinesis.New(session),
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]AWSQuotaInfo{},
 		supportedQuotas: map[string]func(KinesisChecker) (ret AWSQuotaInfo){
@@ -76,15 +77,15 @@ func (c KinesisChecker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
 		for _, q := range serviceQuotas {
 			quota := AWSQuotaInfo{
 				Service:    c.serviceCode,
-				Name:       *q.QuotaName,
+				Name:       aws.StringValue(q.QuotaName),
 				Region:     c.region,
-				Quotacode:  *q.QuotaCode,
-				QuotaValue: *q.Value,
+				Quotacode:  aws.StringValue(q.QuotaCode),
+				QuotaValue: aws.Float64Value(q.Value),
 				UsageValue: 0.0,
-				Unit:       *q.Unit,
-				Global:     *q.GlobalQuota,
+				Unit:       aws.StringValue(q.Unit),
+				Global:     aws.BoolValue(q.GlobalQuota),
 			}
-			c.defaultQuotas[*q.QuotaName] = quota
+			c.defaultQuotas[aws.StringValue(q.QuotaName)] = quota
 		}
 	}
 	return c.defaultQuotas
