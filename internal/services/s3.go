@@ -25,7 +25,7 @@ type S3Checker struct {
 	supportedQuotas map[string]func(S3Checker) (ret AWSQuotaInfo)
 }
 
-func NewS3Checker(session session.Session, svcQuota *servicequotas.ServiceQuotas) *S3Checker {
+func NewS3Checker(session session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
 	c := &S3Checker{
 		serviceCode:    "s3",
 		region:         *session.Config.Region,
