@@ -7,7 +7,31 @@ Simple module to programatically retrieve your AWS account limits (whether they 
 
 A utility `awslimitchecker` CLI is provided, that exposes the module through a simple interface.
 
-## development
+## Usage
+
+Make sure you are logged into your AWS account (`aws configure` or through environment variables). This account needs to have the required IAM permissions.
+
+Check the help page with `awslimitchecker --help` to see all available commands.
+
+### Run a check on a single service
+
+```shell
+awslimitchecker check s3
+```
+
+### Run all the available checks
+
+```shell
+awslimitchecker check all
+```
+
+### Export data to csv
+
+```shell
+awslimitchecker check all --csv
+```
+
+## Development
 
 To run the latest:
 
