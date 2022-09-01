@@ -27,19 +27,14 @@ func createAwsSession(awsprofile string, region string) session.Session {
 	return *sess
 }
 
-func GetLimits(awsService string, awsprofile string, region string) {
-	fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsprofile, region, awsService)
+func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
 	session := createAwsSession(awsprofile, region)
 	quotaClient := servicequotas.New(&session)
 
-	usage := []services.AWSQuotaInfo{}
 	for _, checker := range SupportedAwsServices {
-		usage = append(usage, checker(session, quotaClient)...)
+		ret = append(ret, checker(session, quotaClient)...)
 	}
-	for _, u := range usage {
-		fmt.Printf("* [%s] %s %g/%g\n",
-			u.Service, u.Name, u.UsageValue, u.QuotaValue)
-	}
+	return
 }
 
 func GetS3Usage(session session.Session, quotaClient *servicequotas.ServiceQuotas) (ret []services.AWSQuotaInfo) {

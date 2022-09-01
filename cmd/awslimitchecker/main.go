@@ -13,6 +13,7 @@ var (
 	cfgFile    string
 	region     string
 	awsprofile string
+	console    bool
 
 	rootCmd = &cobra.Command{
 		Use:   "awslimitchecker",
@@ -43,11 +44,14 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.awslimitchecker.yaml)")
 	rootCmd.PersistentFlags().StringVar(&awsprofile, "awsprofile", "", "aws profile to use (default `default`)")
 	rootCmd.PersistentFlags().StringVar(&region, "region", "", "region to evaluate (default `us-east-1`)")
+	rootCmd.PersistentFlags().BoolVar(&console, "console", false, "output results to console")
 
 	viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
 	viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
+	viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
 	viper.SetDefault("awsprofile", "default")
 	viper.SetDefault("region", "us-east-1")
+	viper.SetDefault("console", false)
 }
 
 func initConfig() {

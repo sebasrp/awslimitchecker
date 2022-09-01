@@ -27,6 +27,18 @@ var check = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		awslimitchecker.GetLimits(args[0], viper.GetString("awsprofile"), viper.GetString("region"))
+		awsService := args[0]
+		awsProfile := viper.GetString("awsprofile")
+		region := viper.GetString("region")
+		console := viper.GetBool("console")
+
+		usage := awslimitchecker.GetLimits(awsService, awsProfile, region)
+		if console {
+			fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsProfile, region, awsService)
+			for _, u := range usage {
+				fmt.Printf("* [%s] %s %g/%g\n",
+					u.Service, u.Name, u.UsageValue, u.QuotaValue)
+			}
+		}
 	},
 }
