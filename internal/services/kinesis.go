@@ -68,32 +68,7 @@ func (c KinesisChecker) getShardUsage() (ret AWSQuotaInfo) {
 
 func (c KinesisChecker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
 	if len(c.defaultQuotas) == 0 {
-		// we first retrieve all default quotas from servicequotas
-		serviceQuotas := []*servicequotas.ServiceQuota{}
-		err := c.svcQuotaClient.ListAWSDefaultServiceQuotasPages(&servicequotas.ListAWSDefaultServiceQuotasInput{
-			ServiceCode: &c.serviceCode,
-		}, func(p *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
-			serviceQuotas = append(serviceQuotas, p.Quotas...)
-			return true // continue paging
-		})
-		if err != nil {
-			fmt.Printf("failed to retrieve quotas for service %s, %v", c.serviceCode, err)
-		}
-
-		// we then convert to our data model
-		for _, q := range serviceQuotas {
-			quota := AWSQuotaInfo{
-				Service:    c.serviceCode,
-				Name:       aws.StringValue(q.QuotaName),
-				Region:     c.region,
-				Quotacode:  aws.StringValue(q.QuotaCode),
-				QuotaValue: aws.Float64Value(q.Value),
-				UsageValue: 0.0,
-				Unit:       aws.StringValue(q.Unit),
-				Global:     aws.BoolValue(q.GlobalQuota),
-			}
-			c.defaultQuotas[aws.StringValue(q.QuotaName)] = quota
-		}
+		c.defaultQuotas = GetServiceDefaultQuotas(c.serviceCode, c.region, c.svcQuotaClient)
 	}
 	return c.defaultQuotas
 }
