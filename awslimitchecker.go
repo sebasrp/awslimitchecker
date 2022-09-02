@@ -38,6 +38,14 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 	return
 }
 
+func GetIamPolicies() (ret []string) {
+	for _, checker := range SupportedAwsServices {
+		service := checker(nil, nil)
+		ret = append(ret, service.GetRequiredPermissions()...)
+	}
+	return
+}
+
 func IsValidAwsService(service string) bool {
 	if _, ok := SupportedAwsServices[service]; ok || service == "all" {
 		return true
