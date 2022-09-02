@@ -41,7 +41,7 @@ func NewS3Checker(session *session.Session, svcQuota *servicequotas.ServiceQuota
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]AWSQuotaInfo{},
 		supportedQuotas: map[string]func(S3Checker) (ret AWSQuotaInfo){
-			"Buckets": S3Checker.GetBucketUsage},
+			"Buckets": S3Checker.getBucketUsage},
 	}
 	return c
 }
@@ -54,7 +54,7 @@ func (c S3Checker) GetUsage() (ret []AWSQuotaInfo) {
 	return
 }
 
-func (c S3Checker) GetBucketUsage() (ret AWSQuotaInfo) {
+func (c S3Checker) getBucketUsage() (ret AWSQuotaInfo) {
 	result, err := c.client.ListBuckets(nil)
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)

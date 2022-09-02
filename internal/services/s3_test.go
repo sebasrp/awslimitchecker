@@ -10,3 +10,7 @@ import (
 func TestS3CheckerImpl(t *testing.T) {
 	require.Implements(t, (*services.Svcquota)(nil), new(services.S3Checker))
 }
+
+func TestNewS3CheckerImpl(t *testing.T) {
+	require.Implements(t, (*services.Svcquota)(nil), services.NewS3Checker(nil, nil))
+}

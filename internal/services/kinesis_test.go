@@ -10,3 +10,7 @@ import (
 func TestKinesisCheckerImpl(t *testing.T) {
 	require.Implements(t, (*services.Svcquota)(nil), new(services.KinesisChecker))
 }
+
+func TestNewKinesisCheckerImpl(t *testing.T) {
+	require.Implements(t, (*services.Svcquota)(nil), services.NewKinesisChecker(nil, nil))
+}

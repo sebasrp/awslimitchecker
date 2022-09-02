@@ -41,7 +41,7 @@ func NewKinesisChecker(session *session.Session, svcQuota *servicequotas.Service
 		svcQuotaClient: svcQuota,
 		defaultQuotas:  map[string]AWSQuotaInfo{},
 		supportedQuotas: map[string]func(KinesisChecker) (ret AWSQuotaInfo){
-			"Shards per Region": KinesisChecker.GetShardUsage,
+			"Shards per Region": KinesisChecker.getShardUsage,
 		},
 	}
 	return c
@@ -55,7 +55,7 @@ func (c KinesisChecker) GetUsage() (ret []AWSQuotaInfo) {
 	return
 }
 
-func (c KinesisChecker) GetShardUsage() (ret AWSQuotaInfo) {
+func (c KinesisChecker) getShardUsage() (ret AWSQuotaInfo) {
 	result, err := c.client.DescribeLimits(nil)
 	if err != nil {
 		fmt.Printf("Unable to list shards, %v", err)
