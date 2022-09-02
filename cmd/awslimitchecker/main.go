@@ -15,6 +15,7 @@ var (
 	awsprofile string
 	console    bool
 	csvFlag    bool
+	verbose    bool
 
 	rootCmd = &cobra.Command{
 		Use:   "awslimitchecker",
@@ -47,16 +48,19 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&region, "region", "", "region to evaluate (default `us-east-1`)")
 	rootCmd.PersistentFlags().BoolVar(&console, "console", false, "output results to console")
 	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "output results to a csv file")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enables verbose output")
 
 	viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
 	viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
 	viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
 	viper.BindPFlag("csv", rootCmd.PersistentFlags().Lookup("csv"))
+	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 	viper.SetDefault("awsprofile", "default")
 	viper.SetDefault("region", "us-east-1")
 	viper.SetDefault("console", false)
 	viper.SetDefault("csv", false)
+	viper.SetDefault("verbose", false)
 }
 
 func initConfig() {
@@ -77,10 +81,13 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-		fmt.Println("Configuration retrieved:")
-		for key, value := range viper.AllSettings() {
-			fmt.Printf("%s: %s\n", key, value)
+		verbose := viper.GetBool("verbose")
+		if verbose {
+			fmt.Println("Using config file:", viper.ConfigFileUsed())
+			fmt.Println("Configuration retrieved:")
+			for key, value := range viper.AllSettings() {
+				fmt.Printf("%v: %v\n", key, value)
+			}
 		}
 	}
 }
