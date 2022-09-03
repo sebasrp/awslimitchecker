@@ -3,61 +3,23 @@ package services
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/aws/aws-sdk-go/service/servicequotas"
-	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 )
-
-type S3Checker struct {
-	// serviceCode is the name of the service this checker verifies
-	serviceCode string
-	// region the checker will run against
-	region string
-	// aws client used to call kinesis service
-	client s3iface.S3API
-	// aws client used to call service quotas service
-	svcQuotaClient servicequotasiface.ServiceQuotasAPI
-	// the default quotas of the service
-	defaultQuotas map[string]AWSQuotaInfo
-	// supportedQuotas contains the service quota name and the func used to retrieve its usage
-	supportedQuotas map[string]func(S3Checker) (ret AWSQuotaInfo)
-}
 
 func NewS3Checker(session *session.Session) Svcquota {
 	serviceCode := "s3"
-	region := ""
-	var client s3iface.S3API
-	var svcQuota servicequotasiface.ServiceQuotasAPI
-	if session != nil {
-		region = aws.StringValue(session.Config.Region)
-		client = s3.New(session)
-		svcQuota = servicequotas.New(session)
+	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
+		"Buckets": ServiceChecker.getS3BucketUsage,
 	}
-	c := &S3Checker{
-		serviceCode:    serviceCode,
-		region:         region,
-		client:         client,
-		svcQuotaClient: svcQuota,
-		defaultQuotas:  map[string]AWSQuotaInfo{},
-		supportedQuotas: map[string]func(S3Checker) (ret AWSQuotaInfo){
-			"Buckets": S3Checker.getBucketUsage},
-	}
-	return c
+	requiredPermissions := []string{"s3:ListAllMyBuckets"}
+
+	return NewServiceChecker(serviceCode, session, supportedQuotas, requiredPermissions)
 }
 
-func (c S3Checker) GetUsage() (ret []AWSQuotaInfo) {
-	for _, q := range c.supportedQuotas {
-		quotaInfo := q(c)
-		ret = append(ret, quotaInfo)
-	}
-	return
-}
-
-func (c S3Checker) getBucketUsage() (ret AWSQuotaInfo) {
-	result, err := c.client.ListBuckets(nil)
+func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {
+	s3Client := s3.New(c.session)
+	result, err := s3Client.ListBuckets(nil)
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)
 	}
@@ -87,15 +49,4 @@ func (c S3Checker) getBucketUsage() (ret AWSQuotaInfo) {
 	ret = c.GetAllDefaultQuotas()["Buckets"]
 	ret.UsageValue = float64(len(result.Buckets))
 	return
-}
-
-func (c S3Checker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
-	if len(c.defaultQuotas) == 0 {
-		c.defaultQuotas = GetServiceDefaultQuotas(c.serviceCode, c.region, c.svcQuotaClient)
-	}
-	return c.defaultQuotas
-}
-
-func (c S3Checker) GetRequiredPermissions() []string {
-	return []string{"s3:ListAllMyBuckets"}
 }
