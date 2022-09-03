@@ -13,6 +13,14 @@ Make sure you are logged into your AWS account (`aws configure` or through envir
 
 Check the help page with `awslimitchecker --help` to see all available commands.
 
+### List required permissions
+
+`awslimitchecker` requires a set of permissions in order to retrieve usage and quota information. To list the required AWS IAM policies, use the `iam` command line argument
+
+```shell
+awslimitchecker iam
+```
+
 ### Run a check on a single service
 
 ```shell
