@@ -7,13 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/servicequotas"
 	"github.com/sebasrp/awslimitchecker/internal/services"
 )
 
-var SupportedAwsServices = map[string]func(session *session.Session, quotaClient *servicequotas.ServiceQuotas) services.Svcquota{
-	"s3":      services.NewS3Checker,
-	"kinesis": services.NewKinesisChecker,
+var SupportedAwsServices = map[string]func(session *session.Session) services.Svcquota{
+	"s3":       services.NewS3Checker,
+	"kinesis":  services.NewKinesisChecker,
+	"dynamodb": services.NewDynamoDbChecker,
 }
 
 func createAwsSession(awsprofile string, region string) session.Session {
@@ -29,15 +29,14 @@ func createAwsSession(awsprofile string, region string) session.Session {
 
 func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
 	session := createAwsSession(awsprofile, region)
-	quotaClient := servicequotas.New(&session)
 
 	if awsService == "all" {
 		for _, checker := range SupportedAwsServices {
-			service := checker(&session, quotaClient)
+			service := checker(&session)
 			ret = append(ret, service.GetUsage()...)
 		}
 	} else {
-		service := SupportedAwsServices[awsService](&session, quotaClient)
+		service := SupportedAwsServices[awsService](&session)
 		ret = append(service.GetUsage())
 	}
 	return
@@ -45,7 +44,7 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 
 func GetIamPolicies() (ret []string) {
 	for _, checker := range SupportedAwsServices {
-		service := checker(nil, nil)
+		service := checker(nil)
 		ret = append(ret, service.GetRequiredPermissions()...)
 	}
 	return

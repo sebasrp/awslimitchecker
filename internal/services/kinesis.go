@@ -26,13 +26,16 @@ type KinesisChecker struct {
 	supportedQuotas map[string]func(KinesisChecker) (ret AWSQuotaInfo)
 }
 
-func NewKinesisChecker(session *session.Session, svcQuota *servicequotas.ServiceQuotas) Svcquota {
+func NewKinesisChecker(session *session.Session) Svcquota {
 	serviceCode := "kinesis"
 	region := ""
 	var client kinesisiface.KinesisAPI
+	var svcQuota servicequotasiface.ServiceQuotasAPI
+
 	if session != nil {
 		region = aws.StringValue(session.Config.Region)
 		client = kinesis.New(session)
+		svcQuota = servicequotas.New(session)
 	}
 	c := &KinesisChecker{
 		serviceCode:    serviceCode,

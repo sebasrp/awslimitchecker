@@ -12,5 +12,5 @@ func TestS3CheckerImpl(t *testing.T) {
 }
 
 func TestNewS3CheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewS3Checker(nil, nil))
+	require.Implements(t, (*services.Svcquota)(nil), services.NewS3Checker(nil))
 }

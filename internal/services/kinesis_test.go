@@ -12,5 +12,5 @@ func TestKinesisCheckerImpl(t *testing.T) {
 }
 
 func TestNewKinesisCheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewKinesisChecker(nil, nil))
+	require.Implements(t, (*services.Svcquota)(nil), services.NewKinesisChecker(nil))
 }
