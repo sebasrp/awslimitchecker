@@ -31,9 +31,14 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 	session := createAwsSession(awsprofile, region)
 	quotaClient := servicequotas.New(&session)
 
-	for _, checker := range SupportedAwsServices {
-		service := checker(&session, quotaClient)
-		ret = append(ret, service.GetUsage()...)
+	if awsService == "all" {
+		for _, checker := range SupportedAwsServices {
+			service := checker(&session, quotaClient)
+			ret = append(ret, service.GetUsage()...)
+		}
+	} else {
+		service := SupportedAwsServices[awsService](&session, quotaClient)
+		ret = append(service.GetUsage())
 	}
 	return
 }
