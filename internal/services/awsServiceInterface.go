@@ -1,13 +1,5 @@
 package services
 
-import (
-	"fmt"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/servicequotas"
-	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
-)
-
 type AWSQuotaInfo struct {
 	Service    string  // service the quota applies to
 	Name       string  // the name of the aws service resource the usage is for
@@ -30,34 +22,4 @@ type Svcquota interface {
 	// GetRequiredPermissions returns a list of the IAM permissions required
 	// to retrieve the usage for this service.
 	GetRequiredPermissions() []string
-}
-
-func GetServiceDefaultQuotas(serviceCode string, region string, svcQuota servicequotasiface.ServiceQuotasAPI) (ret map[string]AWSQuotaInfo) {
-	ret = map[string]AWSQuotaInfo{}
-	serviceQuotas := []*servicequotas.ServiceQuota{}
-	err := svcQuota.ListAWSDefaultServiceQuotasPages(&servicequotas.ListAWSDefaultServiceQuotasInput{
-		ServiceCode: &serviceCode,
-	}, func(p *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
-		serviceQuotas = append(serviceQuotas, p.Quotas...)
-		return true // continue paging
-	})
-	if err != nil {
-		fmt.Printf("failed to retrieve quotas for service %s, %v", serviceCode, err)
-	}
-
-	// we then convert to our data model
-	for _, q := range serviceQuotas {
-		quota := AWSQuotaInfo{
-			Service:    serviceCode,
-			Name:       aws.StringValue(q.QuotaName),
-			Region:     region,
-			Quotacode:  aws.StringValue(q.QuotaCode),
-			QuotaValue: aws.Float64Value(q.Value),
-			UsageValue: 0.0,
-			Unit:       aws.StringValue(q.Unit),
-			Global:     aws.BoolValue(q.GlobalQuota),
-		}
-		ret[aws.StringValue(q.QuotaName)] = quota
-	}
-	return
 }
