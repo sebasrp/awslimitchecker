@@ -7,14 +7,18 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func NewS3Checker(session *session.Session) Svcquota {
+type S3clientInterface interface {
+	ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
+}
+
+func NewS3Checker(session *session.Session, svcQuotaClient SvcQuotaClientInterface) Svcquota {
 	serviceCode := "s3"
 	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
 		"Buckets": ServiceChecker.getS3BucketUsage,
 	}
 	requiredPermissions := []string{"s3:ListAllMyBuckets"}
 
-	return NewServiceChecker(serviceCode, session, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, session, svcQuotaClient, supportedQuotas, requiredPermissions)
 }
 
 func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {

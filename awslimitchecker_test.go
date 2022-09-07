@@ -6,8 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
-	"github.com/aws/aws-sdk-go/service/servicequotas"
-	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 	"github.com/sebasrp/awslimitchecker"
 	"github.com/sebasrp/awslimitchecker/internal/services"
 	"github.com/stretchr/testify/assert"
@@ -21,20 +19,19 @@ type TestChecker struct {
 	// aws client used to call kinesis service
 	client kinesisiface.KinesisAPI
 	// aws client used to call service quotas service
-	svcQuotaClient servicequotasiface.ServiceQuotasAPI
+	svcQuotaClient services.SvcQuotaClientInterface
 	// the default quotas of the service
 	defaultQuotas map[string]services.AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
 	supportedQuotas map[string]func(TestChecker) (ret services.AWSQuotaInfo)
 }
 
-func NewTestChecker(session *session.Session) services.Svcquota {
-	svcQuota := servicequotas.New(session)
+func NewTestChecker(session *session.Session, svcQuotaClient services.SvcQuotaClientInterface) services.Svcquota {
 	c := &TestChecker{
 		serviceCode:    "test",
 		region:         *session.Config.Region,
 		client:         kinesis.New(session),
-		svcQuotaClient: svcQuota,
+		svcQuotaClient: svcQuotaClient,
 		defaultQuotas:  map[string]services.AWSQuotaInfo{},
 		supportedQuotas: map[string]func(TestChecker) (ret services.AWSQuotaInfo){
 			"foo": TestChecker.GetTestUsage,
@@ -84,7 +81,7 @@ func (c TestChecker) GetRequiredPermissions() []string {
 }
 
 func TestValidateAwsServiceSuccess(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, svcQuotaClient services.SvcQuotaClientInterface) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "foo"
@@ -93,7 +90,7 @@ func TestValidateAwsServiceSuccess(t *testing.T) {
 }
 
 func TestValidateAwsServiceFailure(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, svcQuotaClient services.SvcQuotaClientInterface) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "bar"
@@ -102,7 +99,7 @@ func TestValidateAwsServiceFailure(t *testing.T) {
 }
 
 func TestValidateAwsServiceAll(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session) services.Svcquota{
+	awslimitchecker.SupportedAwsServices = map[string]func(session *session.Session, svcQuotaClient services.SvcQuotaClientInterface) services.Svcquota{
 		"foo": NewTestChecker,
 	}
 	var input = "all"

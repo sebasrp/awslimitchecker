@@ -8,5 +8,5 @@ import (
 )
 
 func TestNewS3CheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewS3Checker(nil))
+	require.Implements(t, (*services.Svcquota)(nil), services.NewS3Checker(nil, nil))
 }

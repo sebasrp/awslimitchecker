@@ -7,14 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
-func NewDynamoDbChecker(session *session.Session) Svcquota {
+func NewDynamoDbChecker(session *session.Session, svcQuotaClient SvcQuotaClientInterface) Svcquota {
 	serviceCode := "dynamodb"
 	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
 		"Maximum number of tables": ServiceChecker.getDynanoDBTableUsage,
 	}
 	requiredPermissions := []string{"dynamodb:ListTables"}
 
-	return NewServiceChecker(serviceCode, session, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, session, svcQuotaClient, supportedQuotas, requiredPermissions)
 }
 
 func (c ServiceChecker) getDynanoDBTableUsage() (ret AWSQuotaInfo) {

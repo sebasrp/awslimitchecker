@@ -7,14 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/kinesis"
 )
 
-func NewKinesisChecker(session *session.Session) Svcquota {
+func NewKinesisChecker(session *session.Session, svcQuotaClient SvcQuotaClientInterface) Svcquota {
 	serviceCode := "kinesis"
 	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
 		"Shards per Region": ServiceChecker.getKinesisShardUsage,
 	}
 	requiredPermissions := []string{"kinesis:DescribeLimits"}
 
-	return NewServiceChecker(serviceCode, session, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, session, svcQuotaClient, supportedQuotas, requiredPermissions)
 }
 
 func (c ServiceChecker) getKinesisShardUsage() (ret AWSQuotaInfo) {

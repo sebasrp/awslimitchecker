@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
-	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 )
 
 type ServiceChecker struct {
@@ -17,7 +16,7 @@ type ServiceChecker struct {
 	//session in use to contact AWS
 	session *session.Session
 	// aws client used to call service quotas service
-	svcQuotaClient servicequotasiface.ServiceQuotasAPI
+	svcQuotaClient SvcQuotaClientInterface
 	// the default quotas of the service
 	defaultQuotas map[string]AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
@@ -26,26 +25,29 @@ type ServiceChecker struct {
 	requiredPermissions []string
 }
 
+type SvcQuotaClientInterface interface {
+	ListAWSDefaultServiceQuotasPages(*servicequotas.ListAWSDefaultServiceQuotasInput, func(*servicequotas.ListAWSDefaultServiceQuotasOutput, bool) bool) error
+}
+
 func NewServiceChecker(
 	serviceCode string,
 	session *session.Session,
+	svcQuotaClient SvcQuotaClientInterface,
 	quotas map[string]func(ServiceChecker) (ret AWSQuotaInfo),
 	permissions []string,
 
 ) Svcquota {
 
 	region := ""
-	var svcQuota servicequotasiface.ServiceQuotasAPI
 	if session != nil {
 		region = *session.Config.Region
-		svcQuota = servicequotas.New(session)
 	}
 
 	c := &ServiceChecker{
 		serviceCode:         serviceCode,
 		region:              region,
 		session:             session,
-		svcQuotaClient:      svcQuota,
+		svcQuotaClient:      svcQuotaClient,
 		defaultQuotas:       map[string]AWSQuotaInfo{},
 		supportedQuotas:     quotas,
 		requiredPermissions: permissions,

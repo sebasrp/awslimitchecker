@@ -8,5 +8,5 @@ import (
 )
 
 func TestNewDynamoDbCheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewDynamoDbChecker(nil))
+	require.Implements(t, (*services.Svcquota)(nil), services.NewDynamoDbChecker(nil, nil))
 }

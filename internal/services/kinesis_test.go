@@ -8,5 +8,5 @@ import (
 )
 
 func TestNewKinesisCheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewKinesisChecker(nil))
+	require.Implements(t, (*services.Svcquota)(nil), services.NewKinesisChecker(nil, nil))
 }
