@@ -7,7 +7,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-type S3clientInterface interface {
+var s3Client S3ClientInterface
+
+type S3ClientInterface interface {
 	ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
 }
 
@@ -22,10 +24,13 @@ func NewS3Checker(session *session.Session, svcQuotaClient SvcQuotaClientInterfa
 }
 
 func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {
-	s3Client := s3.New(c.session)
+	if s3Client == nil {
+		s3Client = s3.New(c.session)
+	}
 	result, err := s3Client.ListBuckets(nil)
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)
+		return
 	}
 
 	/* breakdown per region.
