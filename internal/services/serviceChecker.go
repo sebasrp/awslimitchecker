@@ -81,6 +81,7 @@ func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) 
 	})
 	if err != nil {
 		fmt.Printf("failed to retrieve quotas for service %s, %v", c.serviceCode, err)
+		return
 	}
 
 	// we then convert to our data model
