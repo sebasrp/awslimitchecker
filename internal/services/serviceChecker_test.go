@@ -17,12 +17,11 @@ func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas 
 	return NewServiceChecker(serviceCode, nil, svcQuotaMockClient, supportedQuotas, requiredPermissions)
 }
 
-func NewQuota(svcName string, svcCode string, quotaName string, quotaCode string, isGlobal bool) *servicequotas.ServiceQuota {
+func NewQuota(svcName string, quotaName string, quotaValue float64, isGlobal bool) *servicequotas.ServiceQuota {
 	return &servicequotas.ServiceQuota{
 		ServiceName: &svcName,
-		ServiceCode: &svcCode,
 		QuotaName:   &quotaName,
-		QuotaCode:   &quotaCode,
+		Value:       &quotaValue,
 		GlobalQuota: &isGlobal,
 	}
 }
@@ -54,7 +53,7 @@ func TestGetUsage(t *testing.T) {
 	}
 	mockedDefaultQuotasOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceName", "testServiceCode", "testQuotaName", "testQuotaCode", false),
+			NewQuota("testServiceName", "testQuotaName", float64(100), false),
 		},
 	}
 	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{Resp: mockedDefaultQuotasOutput}
@@ -65,7 +64,7 @@ func TestGetUsage(t *testing.T) {
 func TestGetAllDefaultQuotas(t *testing.T) {
 	mockedOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceName", "testServiceCode", "testQuotaName", "testQuotaCode", false),
+			NewQuota("testServiceName", "testQuotaName", float64(100), false),
 		},
 	}
 	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{Resp: mockedOutput}
@@ -76,7 +75,7 @@ func TestGetAllDefaultQuotas(t *testing.T) {
 func TestGetAllDefaultQuotasError(t *testing.T) {
 	mockedOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceNam2e", "testServiceCode2", "testQuotaName2", "testQuotaCode2", false),
+			NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false),
 		},
 	}
 	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
