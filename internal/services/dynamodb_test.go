@@ -1,12 +1,75 @@
-package services_test
+package services
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/sebasrp/awslimitchecker/internal/services"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go/service/servicequotas"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+type mockedListTablesPagesMsgs struct {
+	dynamodbiface.DynamoDBAPI
+	Resp  dynamodb.ListTablesOutput
+	Error error
+}
+
+func (m mockedListTablesPagesMsgs) ListTablesPages(
+	input *dynamodb.ListTablesInput,
+	fn func(*dynamodb.ListTablesOutput, bool) bool) error {
+	fn(&m.Resp, false)
+	return m.Error
+}
+
 func TestNewDynamoDbCheckerImpl(t *testing.T) {
-	require.Implements(t, (*services.Svcquota)(nil), services.NewDynamoDbChecker(nil, nil))
+	require.Implements(t, (*Svcquota)(nil), NewDynamoDbChecker(nil, nil))
+}
+
+func TestGetDynanoDBTableUsage(t *testing.T) {
+	mockedOutput := dynamodb.ListTablesOutput{
+		TableNames: []*string{aws.String("table1"), aws.String("table2")},
+	}
+	ddbClient = mockedListTablesPagesMsgs{Resp: mockedOutput}
+
+	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+		Quotas: []*servicequotas.ServiceQuota{
+			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
+		},
+	}
+	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+		Resp: mockedSvcQuotaOutput,
+	}
+
+	ddbChecker := NewDynamoDbChecker(nil, mockedSvcQuotaClient)
+	actual := ddbChecker.GetUsage()
+	assert.Equal(t, 1, len(actual))
+	firstQuota := actual[0]
+	assert.Equal(t, "dynamodb", firstQuota.Service)
+	assert.Equal(t, float64(2500), firstQuota.QuotaValue)
+	assert.Equal(t, float64(len(mockedOutput.TableNames)), firstQuota.UsageValue)
+}
+
+func TestGetDynanoDBTableUsageError(t *testing.T) {
+	mockedOutput := dynamodb.ListTablesOutput{
+		TableNames: []*string{aws.String("table1"), aws.String("table2")},
+	}
+	ddbClient = mockedListTablesPagesMsgs{Resp: mockedOutput, Error: errors.New("test error")}
+
+	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+		Quotas: []*servicequotas.ServiceQuota{
+			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
+		},
+	}
+	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+		Resp: mockedSvcQuotaOutput,
+	}
+
+	ddbChecker := NewDynamoDbChecker(nil, mockedSvcQuotaClient)
+	actual := ddbChecker.GetUsage()
+	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
+	assert.Equal(t, expected, actual)
 }
