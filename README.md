@@ -44,7 +44,12 @@ awslimitchecker check all --csv
 To run the latest:
 
 ```shell
-cd awslimitchecker/cmd
-go install
+cd awslimitchecker
+go build ./... && go install ./...
 awslimitechchecker --help
 ```
+
+When making changes:
+
+1. make sure you add relevant tests (there is a github action doing codecov validation)
+2. make sure the existing tests pass `go test ./...` from root directory
