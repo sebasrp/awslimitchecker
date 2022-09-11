@@ -22,7 +22,9 @@ type Config struct {
 	DynamoDb      DynamodbClientInterface
 }
 
-func InitializeConfig(awsprofile string, region string) (*Config, error) {
+var InitializeConfig = initializeConfig
+
+func initializeConfig(awsprofile string, region string) (*Config, error) {
 	sess, err := createAwsSession(awsprofile, region)
 	if err != nil {
 		return &Config{}, fmt.Errorf("unable to create a session to aws with error: %v", err)
