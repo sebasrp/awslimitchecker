@@ -1,6 +1,7 @@
 package awslimitchecker_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/sebasrp/awslimitchecker"
@@ -17,6 +18,8 @@ type TestChecker struct {
 	defaultQuotas map[string]services.AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
 	supportedQuotas map[string]func(TestChecker) (ret services.AWSQuotaInfo)
+	// Permissions required to get usage
+	requiredPermissions []string
 }
 
 func NewTestChecker() services.Svcquota {
@@ -27,6 +30,7 @@ func NewTestChecker() services.Svcquota {
 		supportedQuotas: map[string]func(TestChecker) (ret services.AWSQuotaInfo){
 			"foo": TestChecker.GetTestUsage,
 		},
+		requiredPermissions: []string{"testService:testIAMPolicy"},
 	}
 	return c
 }
@@ -68,7 +72,7 @@ func (c TestChecker) GetAllDefaultQuotas() map[string]services.AWSQuotaInfo {
 }
 
 func (c TestChecker) GetRequiredPermissions() []string {
-	return []string{"testService:testIAMPolicy"}
+	return c.requiredPermissions
 }
 
 func TestValidateAwsServiceSuccess(t *testing.T) {
@@ -96,4 +100,55 @@ func TestValidateAwsServiceAll(t *testing.T) {
 	var input = "all"
 	var actual = awslimitchecker.IsValidAwsService(input)
 	assert.Truef(t, actual, "%s should be valid service", input)
+}
+
+func TestGetIamPolicies(t *testing.T) {
+	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+		"foo": NewTestChecker,
+		"bar": NewTestChecker,
+	}
+	assert.Equal(t, 2, len(awslimitchecker.GetIamPolicies()))
+}
+
+func TestGetLimitsAll(t *testing.T) {
+	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+		"foo": NewTestChecker,
+		"bar": NewTestChecker,
+	}
+	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
+		return &services.Config{}, nil
+	}
+	assert.Equal(t, 2, len(awslimitchecker.GetLimits("all", "testProfile", "testRegion")))
+}
+
+func TestGetLimitsSingle(t *testing.T) {
+	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+		"foo": NewTestChecker,
+		"bar": NewTestChecker,
+	}
+	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
+		return &services.Config{}, nil
+	}
+	assert.Equal(t, 1, len(awslimitchecker.GetLimits("foo", "testProfile", "testRegion")))
+}
+
+func TestGetLimitsSingleWrong(t *testing.T) {
+	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+		"foo": NewTestChecker,
+		"bar": NewTestChecker,
+	}
+	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
+		return &services.Config{}, nil
+	}
+	assert.Equal(t, 0, len(awslimitchecker.GetLimits("boz", "testProfile", "testRegion")))
+}
+func TestGetLimitsErrorInit(t *testing.T) {
+	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+		"foo": NewTestChecker,
+		"bar": NewTestChecker,
+	}
+	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
+		return &services.Config{}, errors.New("test error")
+	}
+	assert.Equal(t, 0, len(awslimitchecker.GetLimits("all", "testProfile", "testRegion")))
 }

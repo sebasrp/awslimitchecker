@@ -16,6 +16,7 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 	_, err := services.InitializeConfig(awsprofile, region)
 	if err != nil {
 		fmt.Errorf("Unable to create AWS session, %v", err)
+		return
 	}
 
 	if awsService == "all" {
@@ -23,8 +24,8 @@ func GetLimits(awsService string, awsprofile string, region string) (ret []servi
 			service := checker()
 			ret = append(ret, service.GetUsage()...)
 		}
-	} else {
-		service := SupportedAwsServices[awsService]()
+	} else if val, ok := SupportedAwsServices[awsService]; ok {
+		service := val()
 		ret = service.GetUsage()
 	}
 	return
