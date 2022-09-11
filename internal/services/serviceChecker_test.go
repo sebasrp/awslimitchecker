@@ -13,8 +13,9 @@ import (
 func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas map[string]func(ServiceChecker) (ret AWSQuotaInfo)) Svcquota {
 	serviceCode := "testService"
 	requiredPermissions := []string{"test:ListTestIAM"}
+	conf.ServiceQuotas = svcQuotaMockClient
 
-	return NewServiceChecker(serviceCode, nil, svcQuotaMockClient, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
 func NewQuota(svcName string, quotaName string, quotaValue float64, isGlobal bool) *servicequotas.ServiceQuota {

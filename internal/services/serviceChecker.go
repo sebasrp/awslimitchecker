@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
 )
 
@@ -13,10 +12,6 @@ type ServiceChecker struct {
 	serviceCode string
 	// region the checker will run against
 	region string
-	//session in use to contact AWS
-	session *session.Session
-	// aws client used to call service quotas service
-	svcQuotaClient SvcQuotaClientInterface
 	// the default quotas of the service
 	defaultQuotas map[string]AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
@@ -25,29 +20,21 @@ type ServiceChecker struct {
 	requiredPermissions []string
 }
 
-type SvcQuotaClientInterface interface {
-	ListAWSDefaultServiceQuotasPages(*servicequotas.ListAWSDefaultServiceQuotasInput, func(*servicequotas.ListAWSDefaultServiceQuotasOutput, bool) bool) error
-}
-
 func NewServiceChecker(
 	serviceCode string,
-	session *session.Session,
-	svcQuotaClient SvcQuotaClientInterface,
 	quotas map[string]func(ServiceChecker) (ret AWSQuotaInfo),
 	permissions []string,
 
 ) Svcquota {
 
 	region := ""
-	if session != nil {
-		region = *session.Config.Region
+	if conf.Session != nil {
+		region = *conf.Session.Config.Region
 	}
 
 	c := &ServiceChecker{
 		serviceCode:         serviceCode,
 		region:              region,
-		session:             session,
-		svcQuotaClient:      svcQuotaClient,
 		defaultQuotas:       map[string]AWSQuotaInfo{},
 		supportedQuotas:     quotas,
 		requiredPermissions: permissions,
@@ -73,7 +60,7 @@ func (c ServiceChecker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
 func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) {
 	ret = map[string]AWSQuotaInfo{}
 	serviceQuotas := []*servicequotas.ServiceQuota{}
-	err := c.svcQuotaClient.ListAWSDefaultServiceQuotasPages(&servicequotas.ListAWSDefaultServiceQuotasInput{
+	err := conf.ServiceQuotas.ListAWSDefaultServiceQuotasPages(&servicequotas.ListAWSDefaultServiceQuotasInput{
 		ServiceCode: &c.serviceCode,
 	}, func(p *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
 		serviceQuotas = append(serviceQuotas, p.Quotas...)

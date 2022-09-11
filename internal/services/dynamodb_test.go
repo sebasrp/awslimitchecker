@@ -26,25 +26,25 @@ func (m mockedListTablesPagesMsgs) ListTablesPages(
 }
 
 func TestNewDynamoDbCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewDynamoDbChecker(nil, nil))
+	require.Implements(t, (*Svcquota)(nil), NewDynamoDbChecker())
 }
 
 func TestGetDynanoDBTableUsage(t *testing.T) {
 	mockedOutput := dynamodb.ListTablesOutput{
 		TableNames: []*string{aws.String("table1"), aws.String("table2")},
 	}
-	ddbClient = mockedListTablesPagesMsgs{Resp: mockedOutput}
+	conf.DynamoDb = mockedListTablesPagesMsgs{Resp: mockedOutput}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	ddbChecker := NewDynamoDbChecker(nil, mockedSvcQuotaClient)
+	ddbChecker := NewDynamoDbChecker()
 	actual := ddbChecker.GetUsage()
 	assert.Equal(t, 1, len(actual))
 	firstQuota := actual[0]
@@ -57,18 +57,18 @@ func TestGetDynanoDBTableUsageError(t *testing.T) {
 	mockedOutput := dynamodb.ListTablesOutput{
 		TableNames: []*string{aws.String("table1"), aws.String("table2")},
 	}
-	ddbClient = mockedListTablesPagesMsgs{Resp: mockedOutput, Error: errors.New("test error")}
+	conf.DynamoDb = mockedListTablesPagesMsgs{Resp: mockedOutput, Error: errors.New("test error")}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	ddbChecker := NewDynamoDbChecker(nil, mockedSvcQuotaClient)
+	ddbChecker := NewDynamoDbChecker()
 	actual := ddbChecker.GetUsage()
 	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
 	assert.Equal(t, expected, actual)

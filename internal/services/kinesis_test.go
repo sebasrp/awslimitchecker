@@ -22,25 +22,25 @@ func (m mockedKinesisDescribeLimitsMsg) DescribeLimits(input *kinesis.DescribeLi
 }
 
 func TestNewKinesisCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewKinesisChecker(nil, nil))
+	require.Implements(t, (*Svcquota)(nil), NewKinesisChecker())
 }
 
 func TestGetKinesisShardUsage(t *testing.T) {
 	mockedkinesisOutput := kinesis.DescribeLimitsOutput{
 		OpenShardCount: aws.Int64(2),
 	}
-	kinesisClient = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: nil}
+	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: nil}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("kinesis", "Shards per Region", float64(10), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	kinesisChecker := NewKinesisChecker(nil, mockedSvcQuotaClient)
+	kinesisChecker := NewKinesisChecker()
 	actual := kinesisChecker.GetUsage()
 	assert.Equal(t, 1, len(actual))
 	firstQuota := actual[0]
@@ -53,18 +53,18 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	mockedkinesisOutput := kinesis.DescribeLimitsOutput{
 		OpenShardCount: aws.Int64(2),
 	}
-	kinesisClient = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: errors.New("test error")}
+	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: errors.New("test error")}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("kinesis", "Shards per Region", float64(10), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	kinesisChecker := NewKinesisChecker(nil, mockedSvcQuotaClient)
+	kinesisChecker := NewKinesisChecker()
 	actual := kinesisChecker.GetUsage()
 	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
 	assert.Equal(t, expected, actual)

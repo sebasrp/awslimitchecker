@@ -21,25 +21,25 @@ func (m mockedS3ClientListBucketsMsg) ListBuckets(input *s3.ListBucketsInput) (*
 }
 
 func TestNewS3CheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewS3Checker(nil, nil))
+	require.Implements(t, (*Svcquota)(nil), NewS3Checker())
 }
 
 func TestGetS3BucketUsage(t *testing.T) {
 	mockedS3Output := s3.ListBucketsOutput{
 		Buckets: []*s3.Bucket{},
 	}
-	s3Client = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: nil}
+	conf.S3 = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: nil}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("s3", "Buckets", float64(300), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	s3Checker := NewS3Checker(nil, mockedSvcQuotaClient)
+	s3Checker := NewS3Checker()
 	actual := s3Checker.GetUsage()
 	firstQuota := actual[0]
 	assert.Equal(t, 1, len(actual))
@@ -52,18 +52,18 @@ func TestGetS3BucketUsageError(t *testing.T) {
 	mockedS3Output := s3.ListBucketsOutput{
 		Buckets: []*s3.Bucket{},
 	}
-	s3Client = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: errors.New("test error")}
+	conf.S3 = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: errors.New("test error")}
 
 	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("s3", "Buckets", float64(300), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
+	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
 		Resp: mockedSvcQuotaOutput,
 	}
 
-	s3Checker := NewS3Checker(nil, mockedSvcQuotaClient)
+	s3Checker := NewS3Checker()
 	actual := s3Checker.GetUsage()
 	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
 	assert.Equal(t, expected, actual)

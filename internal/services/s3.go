@@ -3,31 +3,25 @@ package services
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
-
-var s3Client S3ClientInterface
 
 type S3ClientInterface interface {
 	ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
 }
 
-func NewS3Checker(session *session.Session, svcQuotaClient SvcQuotaClientInterface) Svcquota {
+func NewS3Checker() Svcquota {
 	serviceCode := "s3"
 	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
 		"Buckets": ServiceChecker.getS3BucketUsage,
 	}
 	requiredPermissions := []string{"s3:ListAllMyBuckets"}
 
-	return NewServiceChecker(serviceCode, session, svcQuotaClient, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
 func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {
-	if s3Client == nil {
-		s3Client = s3.New(c.session)
-	}
-	result, err := s3Client.ListBuckets(nil)
+	result, err := conf.S3.ListBuckets(nil)
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)
 		return

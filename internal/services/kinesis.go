@@ -3,31 +3,25 @@ package services
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 )
-
-var kinesisClient KinesisClientInterface
 
 type KinesisClientInterface interface {
 	DescribeLimits(input *kinesis.DescribeLimitsInput) (*kinesis.DescribeLimitsOutput, error)
 }
 
-func NewKinesisChecker(session *session.Session, svcQuotaClient SvcQuotaClientInterface) Svcquota {
+func NewKinesisChecker() Svcquota {
 	serviceCode := "kinesis"
 	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
 		"Shards per Region": ServiceChecker.getKinesisShardUsage,
 	}
 	requiredPermissions := []string{"kinesis:DescribeLimits"}
 
-	return NewServiceChecker(serviceCode, session, svcQuotaClient, supportedQuotas, requiredPermissions)
+	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
 func (c ServiceChecker) getKinesisShardUsage() (ret AWSQuotaInfo) {
-	if kinesisClient == nil {
-		kinesisClient = kinesis.New(c.session)
-	}
-	result, err := kinesisClient.DescribeLimits(nil)
+	result, err := conf.Kinesis.DescribeLimits(nil)
 	if err != nil {
 		fmt.Printf("Unable to list shards, %v", err)
 		return
