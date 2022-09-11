@@ -1,0 +1,5 @@
+# code cov repo settings (see https://docs.codecov.com/docs/codecovyml-reference)
+# when making changes, verify validity of file:
+# curl --data-binary @codecov.yaml https://codecov.io/validate
+ignore:
+    - "cmd"
