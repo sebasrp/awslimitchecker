@@ -8,16 +8,16 @@ import (
 )
 
 type ServiceChecker struct {
-	// serviceCode is the name of the service this checker verifies
-	serviceCode string
-	// region the checker will run against
-	region string
+	// ServiceCode is the name of the service this checker verifies
+	ServiceCode string
+	// Region the checker will run against
+	Region string
 	// the default quotas of the service
-	defaultQuotas map[string]AWSQuotaInfo
-	// supportedQuotas contains the service quota name and the func used to retrieve its usage
-	supportedQuotas map[string]func(ServiceChecker) (ret AWSQuotaInfo)
+	DefaultQuotas map[string]AWSQuotaInfo
+	// SupportedQuotas contains the service quota name and the func used to retrieve its usage
+	SupportedQuotas map[string]func(ServiceChecker) (ret AWSQuotaInfo)
 	// Permissions required to get usage
-	requiredPermissions []string
+	RequiredPermissions []string
 }
 
 func NewServiceChecker(
@@ -33,17 +33,17 @@ func NewServiceChecker(
 	}
 
 	c := &ServiceChecker{
-		serviceCode:         serviceCode,
-		region:              region,
-		defaultQuotas:       map[string]AWSQuotaInfo{},
-		supportedQuotas:     quotas,
-		requiredPermissions: permissions,
+		ServiceCode:         serviceCode,
+		Region:              region,
+		DefaultQuotas:       map[string]AWSQuotaInfo{},
+		SupportedQuotas:     quotas,
+		RequiredPermissions: permissions,
 	}
 	return c
 }
 
 func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
-	for _, q := range c.supportedQuotas {
+	for _, q := range c.SupportedQuotas {
 		quotaInfo := q(c)
 		ret = append(ret, quotaInfo)
 	}
@@ -51,32 +51,32 @@ func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
 }
 
 func (c ServiceChecker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
-	if len(c.defaultQuotas) == 0 {
-		c.defaultQuotas = c.getServiceDefaultQuotas()
+	if len(c.DefaultQuotas) == 0 {
+		c.DefaultQuotas = c.getServiceDefaultQuotas()
 	}
-	return c.defaultQuotas
+	return c.DefaultQuotas
 }
 
 func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) {
 	ret = map[string]AWSQuotaInfo{}
 	serviceQuotas := []*servicequotas.ServiceQuota{}
 	err := conf.ServiceQuotas.ListAWSDefaultServiceQuotasPages(&servicequotas.ListAWSDefaultServiceQuotasInput{
-		ServiceCode: &c.serviceCode,
+		ServiceCode: &c.ServiceCode,
 	}, func(p *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
 		serviceQuotas = append(serviceQuotas, p.Quotas...)
 		return true // continue paging
 	})
 	if err != nil {
-		fmt.Printf("failed to retrieve quotas for service %s, %v", c.serviceCode, err)
+		fmt.Printf("failed to retrieve quotas for service %s, %v", c.ServiceCode, err)
 		return
 	}
 
 	// we then convert to our data model
 	for _, q := range serviceQuotas {
 		quota := AWSQuotaInfo{
-			Service:    c.serviceCode,
+			Service:    c.ServiceCode,
 			Name:       aws.StringValue(q.QuotaName),
-			Region:     c.region,
+			Region:     c.Region,
 			Quotacode:  aws.StringValue(q.QuotaCode),
 			QuotaValue: aws.Float64Value(q.Value),
 			UsageValue: 0.0,
@@ -89,5 +89,5 @@ func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) 
 }
 
 func (c ServiceChecker) GetRequiredPermissions() []string {
-	return c.requiredPermissions
+	return c.RequiredPermissions
 }
