@@ -45,12 +45,12 @@ func TestGetDynanoDBTableUsage(t *testing.T) {
 	}
 
 	ddbChecker := NewDynamoDbChecker()
-	actual := ddbChecker.GetUsage()
-	assert.Equal(t, 1, len(actual))
-	firstQuota := actual[0]
-	assert.Equal(t, "dynamodb", firstQuota.Service)
-	assert.Equal(t, float64(2500), firstQuota.QuotaValue)
-	assert.Equal(t, float64(len(mockedOutput.TableNames)), firstQuota.UsageValue)
+	svcChecker := ddbChecker.(*ServiceChecker)
+	actual := svcChecker.getDynanoDBTableUsage()
+
+	assert.Equal(t, "dynamodb", actual.Service)
+	assert.Equal(t, float64(2500), actual.QuotaValue)
+	assert.Equal(t, float64(len(mockedOutput.TableNames)), actual.UsageValue)
 }
 
 func TestGetDynanoDBTableUsageError(t *testing.T) {
@@ -69,7 +69,8 @@ func TestGetDynanoDBTableUsageError(t *testing.T) {
 	}
 
 	ddbChecker := NewDynamoDbChecker()
-	actual := ddbChecker.GetUsage()
-	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "dynamodb", Name: "Maximum number of tables", Region: "", Quotacode: "", QuotaValue: 2500, UsageValue: 0, Unit: "", Global: false}})
+	svcChecker := ddbChecker.(*ServiceChecker)
+	actual := svcChecker.getDynanoDBTableUsage()
+	expected := AWSQuotaInfo{Service: "dynamodb", Name: "Maximum number of tables", Region: "", Quotacode: "", QuotaValue: 2500, UsageValue: 0, Unit: "", Global: false}
 	assert.Equal(t, expected, actual)
 }
