@@ -41,12 +41,12 @@ func TestGetKinesisShardUsage(t *testing.T) {
 	}
 
 	kinesisChecker := NewKinesisChecker()
-	actual := kinesisChecker.GetUsage()
-	assert.Equal(t, 1, len(actual))
-	firstQuota := actual[0]
-	assert.Equal(t, "kinesis", firstQuota.Service)
-	assert.Equal(t, float64(10), firstQuota.QuotaValue)
-	assert.Equal(t, float64(2), firstQuota.UsageValue)
+	svcChecker := kinesisChecker.(*ServiceChecker)
+	actual := svcChecker.getKinesisShardUsage()
+
+	assert.Equal(t, "kinesis", actual.Service)
+	assert.Equal(t, float64(10), actual.QuotaValue)
+	assert.Equal(t, float64(2), actual.UsageValue)
 }
 
 func TestGetKinesisShardUsageError(t *testing.T) {
@@ -65,7 +65,48 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	}
 
 	kinesisChecker := NewKinesisChecker()
-	actual := kinesisChecker.GetUsage()
-	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
+	svcChecker := kinesisChecker.(*ServiceChecker)
+	actual := svcChecker.getKinesisShardUsage()
+	expected := AWSQuotaInfo{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestGetKinesisOnDemandStreamCountUsage(t *testing.T) {
+	mockedkinesisOutput := kinesis.DescribeLimitsOutput{
+		OnDemandStreamCount:      aws.Int64(10),
+		OnDemandStreamCountLimit: aws.Int64(200),
+	}
+	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: nil}
+
+	kinesisChecker := NewKinesisChecker()
+	svcChecker := kinesisChecker.(*ServiceChecker)
+	actual := svcChecker.getKinesisOnDemandStreamCountUsage()
+
+	assert.Equal(t, "kinesis", actual.Service)
+	assert.Equal(t, float64(200), actual.QuotaValue)
+	assert.Equal(t, float64(10), actual.UsageValue)
+	assert.True(t, actual.Global)
+}
+
+func TestGetKinesisOnDemandStreamCountUsageError(t *testing.T) {
+	mockedkinesisOutput := kinesis.DescribeLimitsOutput{
+		OnDemandStreamCount:      aws.Int64(10),
+		OnDemandStreamCountLimit: aws.Int64(200),
+	}
+	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: errors.New("test error")}
+
+	kinesisChecker := NewKinesisChecker()
+	svcChecker := kinesisChecker.(*ServiceChecker)
+	actual := svcChecker.getKinesisOnDemandStreamCountUsage()
+
+	expected := AWSQuotaInfo{
+		Service:   "kinesis",
+		Name:      "On-demand Data Streams per account",
+		Region:    "",
+		Quotacode: "",
+		Unit:      "",
+		Global:    true,
+	}
 	assert.Equal(t, expected, actual)
 }
