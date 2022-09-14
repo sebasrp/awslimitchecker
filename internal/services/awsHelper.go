@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
@@ -20,6 +21,7 @@ type Config struct {
 	S3            S3ClientInterface
 	Kinesis       KinesisClientInterface
 	DynamoDb      DynamodbClientInterface
+	Eks           EksClientInterface
 }
 
 var InitializeConfig = initializeConfig
@@ -36,6 +38,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		S3:            s3.New(&sess),
 		Kinesis:       kinesis.New(&sess),
 		DynamoDb:      dynamodb.New(&sess),
+		Eks:           eks.New(&sess),
 	}
 
 	return conf, nil
