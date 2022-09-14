@@ -26,11 +26,13 @@ func (c ServiceChecker) getDynanoDBTableUsage() (ret AWSQuotaInfo) {
 		tableNames = append(tableNames, p.TableNames...)
 		return true // continue paging
 	})
+	ret = c.GetAllDefaultQuotas()["Maximum number of tables"]
+
 	if err != nil {
 		fmt.Printf("failed to retrieve dynamodb tables, %v", err)
 		return
 	}
-	ret = c.GetAllDefaultQuotas()["Maximum number of tables"]
+
 	ret.UsageValue = float64(len(tableNames))
 	return
 }

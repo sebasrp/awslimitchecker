@@ -67,7 +67,7 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	kinesisChecker := NewKinesisChecker()
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisShardUsage()
-	expected := AWSQuotaInfo{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}
+	expected := AWSQuotaInfo{Service: "kinesis", Name: "Shards per Region", Region: "", Quotacode: "", QuotaValue: 10, UsageValue: 0, Unit: "", Global: false}
 
 	assert.Equal(t, expected, actual)
 }

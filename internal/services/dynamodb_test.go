@@ -70,6 +70,6 @@ func TestGetDynanoDBTableUsageError(t *testing.T) {
 
 	ddbChecker := NewDynamoDbChecker()
 	actual := ddbChecker.GetUsage()
-	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
+	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "dynamodb", Name: "Maximum number of tables", Region: "", Quotacode: "", QuotaValue: 2500, UsageValue: 0, Unit: "", Global: false}})
 	assert.Equal(t, expected, actual)
 }

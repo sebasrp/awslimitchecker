@@ -65,6 +65,6 @@ func TestGetS3BucketUsageError(t *testing.T) {
 
 	s3Checker := NewS3Checker()
 	actual := s3Checker.GetUsage()
-	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "", Name: "", Region: "", Quotacode: "", QuotaValue: 0, UsageValue: 0, Unit: "", Global: false}})
+	expected := []AWSQuotaInfo([]AWSQuotaInfo{{Service: "s3", Name: "Buckets", Region: "", Quotacode: "", QuotaValue: 300, UsageValue: 0, Unit: "", Global: false}})
 	assert.Equal(t, expected, actual)
 }
