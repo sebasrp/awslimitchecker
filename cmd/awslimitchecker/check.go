@@ -41,8 +41,12 @@ var check = &cobra.Command{
 		if console {
 			fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsProfile, region, awsService)
 			for _, u := range usage {
-				fmt.Printf("* [%s] %s %g/%g\n",
-					u.Service, u.Name, u.UsageValue, u.QuotaValue)
+				resourceIdString := ""
+				if u.ResourceId != "" {
+					resourceIdString = fmt.Sprintf("(%s)", u.ResourceId)
+				}
+				fmt.Printf("* [%s] %s %s %g/%g\n",
+					u.Service, u.Name, resourceIdString, u.UsageValue, u.QuotaValue)
 			}
 		}
 

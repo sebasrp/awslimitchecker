@@ -12,7 +12,7 @@ type DynamodbClientInterface interface {
 
 func NewDynamoDbChecker() Svcquota {
 	serviceCode := "dynamodb"
-	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
+	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Maximum number of tables": ServiceChecker.getDynanoDBTableUsage,
 	}
 	requiredPermissions := []string{"dynamodb:ListTables"}
@@ -20,19 +20,21 @@ func NewDynamoDbChecker() Svcquota {
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
-func (c ServiceChecker) getDynanoDBTableUsage() (ret AWSQuotaInfo) {
+func (c ServiceChecker) getDynanoDBTableUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
 	tableNames := []*string{}
 	err := conf.DynamoDb.ListTablesPages(&dynamodb.ListTablesInput{}, func(p *dynamodb.ListTablesOutput, lastPage bool) bool {
 		tableNames = append(tableNames, p.TableNames...)
 		return true // continue paging
 	})
-	ret = c.GetAllDefaultQuotas()["Maximum number of tables"]
+	quotaInfo := c.GetAllDefaultQuotas()["Maximum number of tables"]
 
 	if err != nil {
 		fmt.Printf("failed to retrieve dynamodb tables, %v", err)
 		return
 	}
 
-	ret.UsageValue = float64(len(tableNames))
+	quotaInfo.UsageValue = float64(len(tableNames))
+	ret = append(ret, quotaInfo)
 	return
 }

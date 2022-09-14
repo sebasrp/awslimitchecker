@@ -12,7 +12,7 @@ type KinesisClientInterface interface {
 
 func NewKinesisChecker() Svcquota {
 	serviceCode := "kinesis"
-	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
+	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Shards per Region":                  ServiceChecker.getKinesisShardUsage,
 		"On-demand Data Streams per account": ServiceChecker.getKinesisOnDemandStreamCountUsage,
 	}
@@ -21,22 +21,25 @@ func NewKinesisChecker() Svcquota {
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
-func (c ServiceChecker) getKinesisShardUsage() (ret AWSQuotaInfo) {
+func (c ServiceChecker) getKinesisShardUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
 	result, err := conf.Kinesis.DescribeLimits(nil)
-	ret = c.GetAllDefaultQuotas()["Shards per Region"]
+	quotaInfo := c.GetAllDefaultQuotas()["Shards per Region"]
 
 	if err != nil {
 		fmt.Printf("Unable to retrieve kinesis limits, %v", err)
 		return
 	}
 
-	ret.UsageValue = float64(*result.OpenShardCount)
+	quotaInfo.UsageValue = float64(*result.OpenShardCount)
+	ret = append(ret, quotaInfo)
 	return
 }
 
-func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret AWSQuotaInfo) {
+func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
 	result, err := conf.Kinesis.DescribeLimits(nil)
-	ret = AWSQuotaInfo{
+	quotaInfo := AWSQuotaInfo{
 		Service:   c.ServiceCode,
 		Name:      "On-demand Data Streams per account",
 		Region:    c.Region,
@@ -51,9 +54,10 @@ func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret AWSQuotaInfo) 
 
 	// On-demand Data Streams per account is not in service quotas, so we will
 	// need to create its entry in the quota list
-	ret.QuotaValue = float64(*result.OnDemandStreamCountLimit)
-	ret.UsageValue = float64(*result.OnDemandStreamCount)
+	quotaInfo.QuotaValue = float64(*result.OnDemandStreamCountLimit)
+	quotaInfo.UsageValue = float64(*result.OnDemandStreamCount)
 
-	c.GetAllDefaultQuotas()[ret.Name] = ret
+	c.GetAllDefaultQuotas()[quotaInfo.Name] = quotaInfo
+	ret = append(ret, quotaInfo)
 	return
 }

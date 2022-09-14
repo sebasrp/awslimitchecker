@@ -42,9 +42,11 @@ func TestGetS3BucketUsage(t *testing.T) {
 	s3Checker := NewS3Checker()
 	svcChecker := s3Checker.(*ServiceChecker)
 	actual := svcChecker.getS3BucketUsage()
-	assert.Equal(t, "s3", actual.Service)
-	assert.Equal(t, float64(300), actual.QuotaValue)
-	assert.Equal(t, float64(len(mockedS3Output.Buckets)), actual.UsageValue)
+	assert.Len(t, actual, 1)
+	usage := actual[0]
+	assert.Equal(t, "s3", usage.Service)
+	assert.Equal(t, float64(300), usage.QuotaValue)
+	assert.Equal(t, float64(len(mockedS3Output.Buckets)), usage.UsageValue)
 }
 
 func TestGetS3BucketUsageError(t *testing.T) {
@@ -65,6 +67,6 @@ func TestGetS3BucketUsageError(t *testing.T) {
 	s3Checker := NewS3Checker()
 	svcChecker := s3Checker.(*ServiceChecker)
 	actual := svcChecker.getS3BucketUsage()
-	expected := AWSQuotaInfo{Service: "s3", Name: "Buckets", Region: "", Quotacode: "", QuotaValue: 300, UsageValue: 0, Unit: "", Global: false}
+	expected := []AWSQuotaInfo{}
 	assert.Equal(t, expected, actual)
 }

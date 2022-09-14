@@ -44,9 +44,11 @@ func TestGetKinesisShardUsage(t *testing.T) {
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisShardUsage()
 
-	assert.Equal(t, "kinesis", actual.Service)
-	assert.Equal(t, float64(10), actual.QuotaValue)
-	assert.Equal(t, float64(2), actual.UsageValue)
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "kinesis", quota.Service)
+	assert.Equal(t, float64(10), quota.QuotaValue)
+	assert.Equal(t, float64(2), quota.UsageValue)
 }
 
 func TestGetKinesisShardUsageError(t *testing.T) {
@@ -67,7 +69,7 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	kinesisChecker := NewKinesisChecker()
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisShardUsage()
-	expected := AWSQuotaInfo{Service: "kinesis", Name: "Shards per Region", Region: "", Quotacode: "", QuotaValue: 10, UsageValue: 0, Unit: "", Global: false}
+	expected := []AWSQuotaInfo{}
 
 	assert.Equal(t, expected, actual)
 }
@@ -83,10 +85,12 @@ func TestGetKinesisOnDemandStreamCountUsage(t *testing.T) {
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisOnDemandStreamCountUsage()
 
-	assert.Equal(t, "kinesis", actual.Service)
-	assert.Equal(t, float64(200), actual.QuotaValue)
-	assert.Equal(t, float64(10), actual.UsageValue)
-	assert.True(t, actual.Global)
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "kinesis", quota.Service)
+	assert.Equal(t, float64(200), quota.QuotaValue)
+	assert.Equal(t, float64(10), quota.UsageValue)
+	assert.True(t, quota.Global)
 }
 
 func TestGetKinesisOnDemandStreamCountUsageError(t *testing.T) {
@@ -100,13 +104,6 @@ func TestGetKinesisOnDemandStreamCountUsageError(t *testing.T) {
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisOnDemandStreamCountUsage()
 
-	expected := AWSQuotaInfo{
-		Service:   "kinesis",
-		Name:      "On-demand Data Streams per account",
-		Region:    "",
-		Quotacode: "",
-		Unit:      "",
-		Global:    true,
-	}
+	expected := []AWSQuotaInfo{}
 	assert.Equal(t, expected, actual)
 }

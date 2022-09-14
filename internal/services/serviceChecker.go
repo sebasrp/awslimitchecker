@@ -15,14 +15,14 @@ type ServiceChecker struct {
 	// the default quotas of the service
 	DefaultQuotas map[string]AWSQuotaInfo
 	// SupportedQuotas contains the service quota name and the func used to retrieve its usage
-	SupportedQuotas map[string]func(ServiceChecker) (ret AWSQuotaInfo)
+	SupportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)
 	// Permissions required to get usage
 	RequiredPermissions []string
 }
 
 func NewServiceChecker(
 	serviceCode string,
-	quotas map[string]func(ServiceChecker) (ret AWSQuotaInfo),
+	quotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo),
 	permissions []string,
 
 ) Svcquota {
@@ -45,7 +45,7 @@ func NewServiceChecker(
 func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
 	for _, q := range c.SupportedQuotas {
 		quotaInfo := q(c)
-		ret = append(ret, quotaInfo)
+		ret = append(ret, quotaInfo...)
 	}
 	return
 }

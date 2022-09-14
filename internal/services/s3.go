@@ -12,7 +12,7 @@ type S3ClientInterface interface {
 
 func NewS3Checker() Svcquota {
 	serviceCode := "s3"
-	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
+	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Buckets": ServiceChecker.getS3BucketUsage,
 	}
 	requiredPermissions := []string{"s3:ListAllMyBuckets"}
@@ -20,9 +20,10 @@ func NewS3Checker() Svcquota {
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
-func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {
+func (c ServiceChecker) getS3BucketUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
 	result, err := conf.S3.ListBuckets(nil)
-	ret = c.GetAllDefaultQuotas()["Buckets"]
+	quota := c.GetAllDefaultQuotas()["Buckets"]
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)
 		return
@@ -49,6 +50,7 @@ func (c ServiceChecker) getS3BucketUsage() (ret AWSQuotaInfo) {
 	}
 	fmt.Printf("regionalBucket: %v\n", regionalBucket)
 	*/
-	ret.UsageValue = float64(len(result.Buckets))
+	quota.UsageValue = float64(len(result.Buckets))
+	ret = append(ret, quota)
 	return
 }

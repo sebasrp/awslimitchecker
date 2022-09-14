@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas map[string]func(ServiceChecker) (ret AWSQuotaInfo)) Svcquota {
+func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)) Svcquota {
 	serviceCode := "testService"
 	requiredPermissions := []string{"test:ListTestIAM"}
 	conf.ServiceQuotas = svcQuotaMockClient
@@ -45,10 +45,11 @@ func TestNewServiceCheckerImpl(t *testing.T) {
 }
 
 func TestGetUsage(t *testing.T) {
-	supportedQuotas := map[string]func(ServiceChecker) (ret AWSQuotaInfo){
-		"testQuotaName": func(c ServiceChecker) (ret AWSQuotaInfo) {
-			ret = c.GetAllDefaultQuotas()["testQuotaName"]
-			ret.UsageValue = float64(100)
+	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
+		"testQuotaName": func(c ServiceChecker) (ret []AWSQuotaInfo) {
+			quota := c.GetAllDefaultQuotas()["testQuotaName"]
+			quota.UsageValue = float64(100)
+			ret = append(ret, quota)
 			return
 		},
 	}
