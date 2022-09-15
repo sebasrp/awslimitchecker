@@ -44,14 +44,9 @@ func TestGetEKSClusterUsage(t *testing.T) {
 	}
 	conf.Eks = mockedEksClient{ListClustersPagesResp: mockedOutput}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("eks", "Clusters", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("eks", "Clusters", float64(10), false)},
+		nil)
 
 	eksChecker := NewEksChecker()
 	svcChecker := eksChecker.(*ServiceChecker)
@@ -70,14 +65,9 @@ func TestGetEKSClusterUsageError(t *testing.T) {
 	}
 	conf.Eks = mockedEksClient{ListClustersPagesResp: mockedOutput, ListClustersPagesError: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("eks", "Clusters", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("eks", "Clusters", float64(10), false)},
+		nil)
 
 	eksChecker := NewEksChecker()
 	svcChecker := eksChecker.(*ServiceChecker)
@@ -95,14 +85,9 @@ func TestGetEKSNodeGroupsPerClusterUsage(t *testing.T) {
 	}
 	conf.Eks = mockedEksClient{ListClustersPagesResp: mockedListClustersOutput, ListNodegroupsPagesResp: mockedListNodegroupsOutput}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("eks", "Managed node groups per cluster", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("eks", "Managed node groups per cluster", float64(10), false)},
+		nil)
 
 	eksChecker := NewEksChecker()
 	svcChecker := eksChecker.(*ServiceChecker)
@@ -145,14 +130,9 @@ func TestGetEKSNodeGroupsPerClusterUsageErrorNodeGroup(t *testing.T) {
 		ListClustersPagesResp:   mockedListClustersOutput,
 		ListNodegroupsPagesResp: mockedListNodegroupsOutput, ListNodegroupsPagesError: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("eks", "Managed node groups per cluster", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("eks", "Managed node groups per cluster", float64(10), false)},
+		nil)
 
 	eksChecker := NewEksChecker()
 	svcChecker := eksChecker.(*ServiceChecker)

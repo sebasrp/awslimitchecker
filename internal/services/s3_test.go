@@ -30,14 +30,9 @@ func TestGetS3BucketUsage(t *testing.T) {
 	}
 	conf.S3 = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: nil}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("s3", "Buckets", float64(300), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("s3", "Buckets", float64(300), false)},
+		nil)
 
 	s3Checker := NewS3Checker()
 	svcChecker := s3Checker.(*ServiceChecker)

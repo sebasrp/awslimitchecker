@@ -35,14 +35,9 @@ func TestGetDynanoDBTableUsage(t *testing.T) {
 	}
 	conf.DynamoDb = mockedListTablesPagesMsgs{Resp: mockedOutput}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("dynamodb", "Maximum number of tables", float64(2500), false)},
+		nil)
 
 	ddbChecker := NewDynamoDbChecker()
 	svcChecker := ddbChecker.(*ServiceChecker)
@@ -61,14 +56,9 @@ func TestGetDynanoDBTableUsageError(t *testing.T) {
 	}
 	conf.DynamoDb = mockedListTablesPagesMsgs{Resp: mockedOutput, Error: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("dynamodb", "Maximum number of tables", float64(2500), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("dynamodb", "Maximum number of tables", float64(2500), false)},
+		nil)
 
 	ddbChecker := NewDynamoDbChecker()
 	svcChecker := ddbChecker.(*ServiceChecker)

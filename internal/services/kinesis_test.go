@@ -31,15 +31,9 @@ func TestGetKinesisShardUsage(t *testing.T) {
 	}
 	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: nil}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("kinesis", "Shards per Region", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
-
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("kinesis", "Shards per Region", float64(10), false)},
+		nil)
 	kinesisChecker := NewKinesisChecker()
 	svcChecker := kinesisChecker.(*ServiceChecker)
 	actual := svcChecker.getKinesisShardUsage()
@@ -57,14 +51,9 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	}
 	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("kinesis", "Shards per Region", float64(10), false),
-		},
-	}
-	conf.ServiceQuotas = mockedScvQuotaClient{
-		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
-	}
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("kinesis", "Shards per Region", float64(10), false)},
+		nil)
 
 	kinesisChecker := NewKinesisChecker()
 	svcChecker := kinesisChecker.(*ServiceChecker)

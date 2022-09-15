@@ -5,52 +5,18 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/servicequotas"
-	"github.com/aws/aws-sdk-go/service/servicequotas/servicequotasiface"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)) Svcquota {
+func NewTestChecker(supportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)) Svcquota {
 	serviceCode := "testService"
 	requiredPermissions := []string{"test:ListTestIAM"}
-	conf.ServiceQuotas = svcQuotaMockClient
-
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
-func NewQuota(svcName string, quotaName string, quotaValue float64, isGlobal bool) *servicequotas.ServiceQuota {
-	return &servicequotas.ServiceQuota{
-		ServiceCode: &svcName,
-		QuotaName:   &quotaName,
-		Value:       &quotaValue,
-		GlobalQuota: &isGlobal,
-	}
-}
-
-type mockedScvQuotaClient struct {
-	servicequotasiface.ServiceQuotasAPI
-	ListAWSDefaultServiceQuotasOutputResp  servicequotas.ListAWSDefaultServiceQuotasOutput
-	ListAWSDefaultServiceQuotasOutputError error
-	ListServiceQuotasOutputResp            servicequotas.ListServiceQuotasOutput
-	ListServiceQuotasOutputError           error
-}
-
-func (m mockedScvQuotaClient) ListAWSDefaultServiceQuotasPages(
-	input *servicequotas.ListAWSDefaultServiceQuotasInput,
-	fn func(*servicequotas.ListAWSDefaultServiceQuotasOutput, bool) bool) error {
-	fn(&m.ListAWSDefaultServiceQuotasOutputResp, false)
-	return m.ListAWSDefaultServiceQuotasOutputError
-}
-
-func (m mockedScvQuotaClient) ListServiceQuotasPages(
-	input *servicequotas.ListServiceQuotasInput,
-	fn func(*servicequotas.ListServiceQuotasOutput, bool) bool) error {
-	fn(&m.ListServiceQuotasOutputResp, false)
-	return m.ListServiceQuotasOutputError
-}
-
 func TestNewServiceCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewTestChecker(nil, nil))
+	require.Implements(t, (*Svcquota)(nil), NewTestChecker(nil))
 }
 
 func TestGetUsage(t *testing.T) {
@@ -62,43 +28,31 @@ func TestGetUsage(t *testing.T) {
 			return
 		},
 	}
-	mockedDefaultQuotasOutput := servicequotas.ListServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceName", "testQuotaName", float64(100), false),
-		},
-	}
-	mockedSvcQuotaClient := mockedScvQuotaClient{ListServiceQuotasOutputResp: mockedDefaultQuotasOutput}
-	testChecker := NewTestChecker(mockedSvcQuotaClient, supportedQuotas)
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(supportedQuotas)
 	assert.Equal(t, 1, len(testChecker.GetUsage()))
 }
 
 func TestGetAllDefaultQuotas(t *testing.T) {
-	mockedOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceName", "testQuotaName", float64(100), false),
-		},
-	}
-	mockedSvcQuotaClient := mockedScvQuotaClient{ListAWSDefaultServiceQuotasOutputResp: mockedOutput}
-	testChecker := NewTestChecker(mockedSvcQuotaClient, nil)
+	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(nil)
 	assert.Equal(t, 1, len(testChecker.GetAllDefaultQuotas()))
 }
 
 func TestGetAllDefaultQuotasError(t *testing.T) {
-	mockedOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
-		Quotas: []*servicequotas.ServiceQuota{
-			NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false),
-		},
-	}
-	mockedSvcQuotaClient := mockedScvQuotaClient{
-		ListAWSDefaultServiceQuotasOutputResp:  mockedOutput,
-		ListAWSDefaultServiceQuotasOutputError: errors.New("test error"),
-	}
-	testChecker := NewTestChecker(mockedSvcQuotaClient, nil)
+	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false)},
+		errors.New("test error"))
+	testChecker := NewTestChecker(nil)
 	assert.Empty(t, testChecker.GetAllDefaultQuotas())
 }
 
 func TestServiceCheckerGetRequiredPermissions(t *testing.T) {
-	testChecker := NewTestChecker(nil, nil)
+	testChecker := NewTestChecker(nil)
 	assert.Equal(t, 1, len(testChecker.GetRequiredPermissions()))
 }
 
