@@ -15,6 +15,7 @@ func NewRdsChecker() Svcquota {
 	serviceCode := "rds"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"DB instances": ServiceChecker.getRdsInstancesCountUsage,
+		"DB clusters":  ServiceChecker.getRdsClusterCountUsage,
 	}
 	requiredPermissions := []string{"rds:DescribeAccountAttributes"}
 
@@ -22,16 +23,6 @@ func NewRdsChecker() Svcquota {
 }
 
 var rdsAccountQuota map[string]*rds.AccountQuota = map[string]*rds.AccountQuota{}
-
-func (c ServiceChecker) getRdsInstancesCountUsage() (ret []AWSQuotaInfo) {
-	ret = []AWSQuotaInfo{}
-	quotaInfo := c.GetAllAppliedQuotas()["DB instances"]
-	if val, ok := c.getRdsAccountQuotas()["DBInstances"]; ok {
-		quotaInfo.UsageValue = float64(*val.Used)
-	}
-	ret = append(ret, quotaInfo)
-	return
-}
 
 func (c ServiceChecker) getRdsAccountQuotas() (ret map[string]*rds.AccountQuota) {
 	ret = rdsAccountQuota
@@ -48,5 +39,25 @@ func (c ServiceChecker) getRdsAccountQuotas() (ret map[string]*rds.AccountQuota)
 	for _, q := range result.AccountQuotas {
 		rdsAccountQuota[aws.StringValue(q.AccountQuotaName)] = q
 	}
+	return
+}
+
+func (c ServiceChecker) getRdsInstancesCountUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["DB instances"]
+	if val, ok := c.getRdsAccountQuotas()["DBInstances"]; ok {
+		quotaInfo.UsageValue = float64(*val.Used)
+	}
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getRdsClusterCountUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["DB clusters"]
+	if val, ok := c.getRdsAccountQuotas()["DBClusters"]; ok {
+		quotaInfo.UsageValue = float64(*val.Used)
+	}
+	ret = append(ret, quotaInfo)
 	return
 }

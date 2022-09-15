@@ -86,4 +86,27 @@ func TestGetRdsInstancesCountUsage(t *testing.T) {
 	assert.Equal(t, "rds", quota.Service)
 	assert.Equal(t, float64(20), quota.QuotaValue)
 	assert.Equal(t, float64(1), quota.UsageValue)
+	t.Cleanup(func() { rdsAccountQuota = map[string]*rds.AccountQuota{} })
+}
+
+func TestGetRdsClusterCountUsage(t *testing.T) {
+	mockedDescribeAccountAttributesOutput := rds.DescribeAccountAttributesOutput{
+		AccountQuotas: []*rds.AccountQuota{{AccountQuotaName: aws.String("DBClusters"), Max: aws.Int64(10), Used: aws.Int64(1)}},
+	}
+	conf.Rds = mockedRdsClient{DescribeAccountAttributesResp: mockedDescribeAccountAttributesOutput, DescribeAccountAttributesError: nil}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("rds", "DB clusters", float64(20), false)},
+		nil)
+
+	rdsChecker := NewRdsChecker()
+	svcChecker := rdsChecker.(*ServiceChecker)
+	actual := svcChecker.getRdsClusterCountUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "rds", quota.Service)
+	assert.Equal(t, float64(20), quota.QuotaValue)
+	assert.Equal(t, float64(1), quota.UsageValue)
+	t.Cleanup(func() { rdsAccountQuota = map[string]*rds.AccountQuota{} })
 }
