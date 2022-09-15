@@ -69,7 +69,7 @@ func TestGetRdsAccountQuotasExists(t *testing.T) {
 
 func TestGetRdsInstancesCountUsage(t *testing.T) {
 	mockedDescribeAccountAttributesOutput := rds.DescribeAccountAttributesOutput{
-		AccountQuotas: []*rds.AccountQuota{{AccountQuotaName: aws.String("DB instances"), Max: aws.Int64(10), Used: aws.Int64(1)}},
+		AccountQuotas: []*rds.AccountQuota{{AccountQuotaName: aws.String("DBInstances"), Max: aws.Int64(10), Used: aws.Int64(1)}},
 	}
 	conf.Rds = mockedRdsClient{DescribeAccountAttributesResp: mockedDescribeAccountAttributesOutput, DescribeAccountAttributesError: nil}
 

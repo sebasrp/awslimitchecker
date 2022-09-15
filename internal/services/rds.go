@@ -26,7 +26,7 @@ var rdsAccountQuota map[string]*rds.AccountQuota = map[string]*rds.AccountQuota{
 func (c ServiceChecker) getRdsInstancesCountUsage() (ret []AWSQuotaInfo) {
 	ret = []AWSQuotaInfo{}
 	quotaInfo := c.GetAllAppliedQuotas()["DB instances"]
-	if val, ok := c.getRdsAccountQuotas()["DB instances"]; ok {
+	if val, ok := c.getRdsAccountQuotas()["DBInstances"]; ok {
 		quotaInfo.UsageValue = float64(*val.Used)
 	}
 	ret = append(ret, quotaInfo)
