@@ -118,7 +118,7 @@ func TestGetRdsReservedDbCountUsage(t *testing.T) {
 	conf.Rds = mockedRdsClient{DescribeAccountAttributesResp: mockedDescribeAccountAttributesOutput, DescribeAccountAttributesError: nil}
 
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("rds", "Reserved DB instance", float64(200), false)},
+		[]*servicequotas.ServiceQuota{NewQuota("rds", "Reserved DB instances", float64(200), false)},
 		nil)
 
 	rdsChecker := NewRdsChecker()
