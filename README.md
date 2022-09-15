@@ -6,6 +6,19 @@
 
 Simple module to programatically retrieve your AWS account limits (whether they are supporter by servicequotas or not). It also provide a lightweight cli program to access the data.
 
+## Status
+
+The project is under active development. We are focusing primarly to put the basic foundations of the module/cli in order to make it useful.
+Not many services are currently supported, but it's fairly simple to add them - priority at the moment is to put the foundations - adding services is done gradually.
+
+## Features
+
+* Check current AWS resource usage against AWS ServiceQuota limits
+* Retrieves current usage
+* Compare current usage to limits
+* When available, retrieves applied (different than default) values
+* Supports explicitely setting the AWS region
+
 ## cli
 
 A utility `awslimitchecker` CLI is provided, that exposes the module through a simple interface.
