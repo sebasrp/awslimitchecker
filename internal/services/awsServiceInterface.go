@@ -16,6 +16,10 @@ type Svcquota interface {
 	// Get Usage retrieve the quotas and usage for the given service
 	GetUsage() []AWSQuotaInfo
 
+	// Retrieves all the applied quotas for the given service. For some quotas,
+	// only the default values are available
+	GetAllAppliedQuotas() map[string]AWSQuotaInfo
+
 	// GetAllDefaultQuotas retrieves all the default quotas for the given
 	// service. Usage of those resources are not retrieved/calculated
 	GetAllDefaultQuotas() map[string]AWSQuotaInfo

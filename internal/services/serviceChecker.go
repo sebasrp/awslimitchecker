@@ -12,6 +12,8 @@ type ServiceChecker struct {
 	ServiceCode string
 	// Region the checker will run against
 	Region string
+	// the applied quotas for the service. For some quotas, only default values are available
+	AppliedQuotas map[string]AWSQuotaInfo
 	// the default quotas of the service
 	DefaultQuotas map[string]AWSQuotaInfo
 	// SupportedQuotas contains the service quota name and the func used to retrieve its usage
@@ -35,6 +37,7 @@ func NewServiceChecker(
 	c := &ServiceChecker{
 		ServiceCode:         serviceCode,
 		Region:              region,
+		AppliedQuotas:       map[string]AWSQuotaInfo{},
 		DefaultQuotas:       map[string]AWSQuotaInfo{},
 		SupportedQuotas:     quotas,
 		RequiredPermissions: permissions,
@@ -46,6 +49,34 @@ func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
 	for _, q := range c.SupportedQuotas {
 		quotaInfo := q(c)
 		ret = append(ret, quotaInfo...)
+	}
+	return
+}
+
+func (c ServiceChecker) GetAllAppliedQuotas() map[string]AWSQuotaInfo {
+	if len(c.AppliedQuotas) == 0 {
+		c.AppliedQuotas = c.getServiceAppliedQuotas()
+	}
+	return c.AppliedQuotas
+}
+
+func (c ServiceChecker) getServiceAppliedQuotas() (ret map[string]AWSQuotaInfo) {
+	ret = map[string]AWSQuotaInfo{}
+	serviceQuotas := []*servicequotas.ServiceQuota{}
+	err := conf.ServiceQuotas.ListServiceQuotasPages(&servicequotas.ListServiceQuotasInput{
+		ServiceCode: &c.ServiceCode,
+	}, func(p *servicequotas.ListServiceQuotasOutput, lastPage bool) bool {
+		serviceQuotas = append(serviceQuotas, p.Quotas...)
+		return true // continue paging
+	})
+	if err != nil {
+		fmt.Printf("failed to retrieve applied quotas for service %s, %v", c.ServiceCode, err)
+		return
+	}
+
+	// we then convert to our data model
+	for _, q := range serviceQuotas {
+		ret[aws.StringValue(q.QuotaName)] = svcQuotaToQuotaInfo(q)
 	}
 	return
 }
@@ -73,17 +104,20 @@ func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) 
 
 	// we then convert to our data model
 	for _, q := range serviceQuotas {
-		quota := AWSQuotaInfo{
-			Service:    c.ServiceCode,
-			Name:       aws.StringValue(q.QuotaName),
-			Region:     c.Region,
-			Quotacode:  aws.StringValue(q.QuotaCode),
-			QuotaValue: aws.Float64Value(q.Value),
-			UsageValue: 0.0,
-			Unit:       aws.StringValue(q.Unit),
-			Global:     aws.BoolValue(q.GlobalQuota),
-		}
-		ret[aws.StringValue(q.QuotaName)] = quota
+		ret[aws.StringValue(q.QuotaName)] = svcQuotaToQuotaInfo(q)
+	}
+	return
+}
+
+func svcQuotaToQuotaInfo(i *servicequotas.ServiceQuota) (ret AWSQuotaInfo) {
+	ret = AWSQuotaInfo{
+		Service:    aws.StringValue(i.ServiceName),
+		Name:       aws.StringValue(i.QuotaName),
+		Quotacode:  aws.StringValue(i.QuotaCode),
+		QuotaValue: aws.Float64Value(i.Value),
+		UsageValue: 0.0,
+		Unit:       aws.StringValue(i.Unit),
+		Global:     aws.BoolValue(i.GlobalQuota),
 	}
 	return
 }

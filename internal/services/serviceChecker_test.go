@@ -92,3 +92,32 @@ func TestServiceCheckerGetRequiredPermissions(t *testing.T) {
 	testChecker := NewTestChecker(nil, nil)
 	assert.Equal(t, 1, len(testChecker.GetRequiredPermissions()))
 }
+
+func TestSvcQuotaToQuotaInfo(t *testing.T) {
+	svcQuotaServiceName := "testService"
+	svcQuotaQuotaName := "quotaName"
+	svcQuotaQuotaCode := "quotaCode"
+	svqQuotaQuotaValue := float64(10)
+	svcQuotaUnit := "myUnit"
+	svcQuotaGlobal := true
+
+	svcQuota := servicequotas.ServiceQuota{
+		ServiceName: &svcQuotaServiceName,
+		QuotaName:   &svcQuotaQuotaName,
+		QuotaCode:   &svcQuotaQuotaCode,
+		Value:       &svqQuotaQuotaValue,
+		Unit:        &svcQuotaUnit,
+		GlobalQuota: &svcQuotaGlobal,
+	}
+
+	expected := AWSQuotaInfo{
+		Service:    "testService",
+		Name:       "quotaName",
+		Quotacode:  "quotaCode",
+		QuotaValue: float64(10),
+		UsageValue: 0.0,
+		Unit:       "myUnit",
+		Global:     true,
+	}
+	assert.Equal(t, expected, svcQuotaToQuotaInfo(&svcQuota))
+}

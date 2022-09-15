@@ -14,6 +14,8 @@ type TestChecker struct {
 	serviceCode string
 	// region the checker will run against
 	region string
+	// the applied quotas for the service. For some quotas, only default values are available
+	appliedQuotas map[string]services.AWSQuotaInfo
 	// the default quotas of the service
 	defaultQuotas map[string]services.AWSQuotaInfo
 	// supportedQuotas contains the service quota name and the func used to retrieve its usage
@@ -26,6 +28,7 @@ func NewTestChecker() services.Svcquota {
 	c := &TestChecker{
 		serviceCode:   "test",
 		region:        "testRegion",
+		appliedQuotas: map[string]services.AWSQuotaInfo{},
 		defaultQuotas: map[string]services.AWSQuotaInfo{},
 		supportedQuotas: map[string]func(TestChecker) (ret services.AWSQuotaInfo){
 			"foo": TestChecker.GetTestUsage,
@@ -55,6 +58,20 @@ func (c TestChecker) GetTestUsage() (ret services.AWSQuotaInfo) {
 		Global:     true,
 	}
 	return
+}
+
+func (c TestChecker) GetAllAppliedQuotas() map[string]services.AWSQuotaInfo {
+	c.appliedQuotas["testQuota"] = services.AWSQuotaInfo{
+		Service:    "testService",
+		Name:       "testQuota",
+		Region:     "testRegion",
+		Quotacode:  "test-quota",
+		QuotaValue: 200,
+		UsageValue: 0.0,
+		Unit:       "",
+		Global:     true,
+	}
+	return c.appliedQuotas
 }
 
 func (c TestChecker) GetAllDefaultQuotas() map[string]services.AWSQuotaInfo {
