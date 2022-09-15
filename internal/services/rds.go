@@ -1,0 +1,52 @@
+package services
+
+import (
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/rds"
+)
+
+type RdsClientInterface interface {
+	DescribeAccountAttributes(input *rds.DescribeAccountAttributesInput) (*rds.DescribeAccountAttributesOutput, error)
+}
+
+func NewRdsChecker() Svcquota {
+	serviceCode := "rds"
+	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
+		"DB instances": ServiceChecker.getRdsInstancesCountUsage,
+	}
+	requiredPermissions := []string{"rds:DescribeAccountAttributes"}
+
+	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
+}
+
+var rdsAccountQuota map[string]*rds.AccountQuota = map[string]*rds.AccountQuota{}
+
+func (c ServiceChecker) getRdsInstancesCountUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["DB instances"]
+	if val, ok := c.getRdsAccountQuotas()["DB instances"]; ok {
+		quotaInfo.UsageValue = float64(*val.Used)
+	}
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getRdsAccountQuotas() (ret map[string]*rds.AccountQuota) {
+	ret = rdsAccountQuota
+	if len(rdsAccountQuota) != 0 {
+		return
+	}
+
+	result, err := conf.Rds.DescribeAccountAttributes(nil)
+	if err != nil {
+		fmt.Printf("Unable to retrieve account attributes, %v", err)
+		return
+	}
+
+	for _, q := range result.AccountQuotas {
+		rdsAccountQuota[aws.StringValue(q.AccountQuotaName)] = q
+	}
+	return
+}
