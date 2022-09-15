@@ -20,7 +20,7 @@ func NewTestChecker(svcQuotaMockClient SvcQuotaClientInterface, supportedQuotas 
 
 func NewQuota(svcName string, quotaName string, quotaValue float64, isGlobal bool) *servicequotas.ServiceQuota {
 	return &servicequotas.ServiceQuota{
-		ServiceName: &svcName,
+		ServiceCode: &svcName,
 		QuotaName:   &quotaName,
 		Value:       &quotaValue,
 		GlobalQuota: &isGlobal,
@@ -94,7 +94,8 @@ func TestServiceCheckerGetRequiredPermissions(t *testing.T) {
 }
 
 func TestSvcQuotaToQuotaInfo(t *testing.T) {
-	svcQuotaServiceName := "testService"
+	svcQuotaServiceCode := "testService"
+	svqQuotaServiceName := "my verbose testService name"
 	svcQuotaQuotaName := "quotaName"
 	svcQuotaQuotaCode := "quotaCode"
 	svqQuotaQuotaValue := float64(10)
@@ -102,7 +103,8 @@ func TestSvcQuotaToQuotaInfo(t *testing.T) {
 	svcQuotaGlobal := true
 
 	svcQuota := servicequotas.ServiceQuota{
-		ServiceName: &svcQuotaServiceName,
+		ServiceCode: &svcQuotaServiceCode,
+		ServiceName: &svqQuotaServiceName,
 		QuotaName:   &svcQuotaQuotaName,
 		QuotaCode:   &svcQuotaQuotaCode,
 		Value:       &svqQuotaQuotaValue,
