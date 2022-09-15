@@ -27,7 +27,7 @@ func (c ServiceChecker) getDynanoDBTableUsage() (ret []AWSQuotaInfo) {
 		tableNames = append(tableNames, p.TableNames...)
 		return true // continue paging
 	})
-	quotaInfo := c.GetAllDefaultQuotas()["Maximum number of tables"]
+	quotaInfo := c.GetAllAppliedQuotas()["Maximum number of tables"]
 
 	if err != nil {
 		fmt.Printf("failed to retrieve dynamodb tables, %v", err)

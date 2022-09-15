@@ -29,7 +29,7 @@ func (c ServiceChecker) getEKSClusterUsage() (ret []AWSQuotaInfo) {
 		clusterNames = append(clusterNames, o.Clusters...)
 		return true // continue paging
 	})
-	quotaInfo := c.GetAllDefaultQuotas()["Clusters"]
+	quotaInfo := c.GetAllAppliedQuotas()["Clusters"]
 
 	if err != nil {
 		fmt.Printf("failed to retrieve eks clusters, %v", err)
@@ -55,7 +55,7 @@ func (c ServiceChecker) getEKSNodeGroupsPerClusterUsage() (ret []AWSQuotaInfo) {
 
 	for _, cluster := range clusterNames {
 		nodegroups := []*string{}
-		quotaInfo := c.GetAllDefaultQuotas()["Managed node groups per cluster"]
+		quotaInfo := c.GetAllAppliedQuotas()["Managed node groups per cluster"]
 		errListNodeGroups := conf.Eks.ListNodegroupsPages(&eks.ListNodegroupsInput{ClusterName: cluster}, func(o *eks.ListNodegroupsOutput, lastPage bool) bool {
 			nodegroups = append(nodegroups, o.Nodegroups...)
 			return true // continue paging

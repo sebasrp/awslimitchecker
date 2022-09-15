@@ -30,13 +30,13 @@ func TestGetS3BucketUsage(t *testing.T) {
 	}
 	conf.S3 = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: nil}
 
-	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("s3", "Buckets", float64(300), false),
 		},
 	}
-	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
-		Resp: mockedSvcQuotaOutput,
+	conf.ServiceQuotas = mockedScvQuotaClient{
+		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
 	}
 
 	s3Checker := NewS3Checker()
@@ -55,13 +55,13 @@ func TestGetS3BucketUsageError(t *testing.T) {
 	}
 	conf.S3 = mockedS3ClientListBucketsMsg{Resp: mockedS3Output, Error: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("s3", "Buckets", float64(300), false),
 		},
 	}
-	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
-		Resp: mockedSvcQuotaOutput,
+	conf.ServiceQuotas = mockedScvQuotaClient{
+		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
 	}
 
 	s3Checker := NewS3Checker()

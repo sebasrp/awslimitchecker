@@ -24,7 +24,7 @@ func NewKinesisChecker() Svcquota {
 func (c ServiceChecker) getKinesisShardUsage() (ret []AWSQuotaInfo) {
 	ret = []AWSQuotaInfo{}
 	result, err := conf.Kinesis.DescribeLimits(nil)
-	quotaInfo := c.GetAllDefaultQuotas()["Shards per Region"]
+	quotaInfo := c.GetAllAppliedQuotas()["Shards per Region"]
 
 	if err != nil {
 		fmt.Printf("Unable to retrieve kinesis limits, %v", err)
@@ -57,7 +57,7 @@ func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret []AWSQuotaInfo
 	quotaInfo.QuotaValue = float64(*result.OnDemandStreamCountLimit)
 	quotaInfo.UsageValue = float64(*result.OnDemandStreamCount)
 
-	c.GetAllDefaultQuotas()[quotaInfo.Name] = quotaInfo
+	c.GetAllAppliedQuotas()[quotaInfo.Name] = quotaInfo
 	ret = append(ret, quotaInfo)
 	return
 }

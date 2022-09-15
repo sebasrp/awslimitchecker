@@ -31,13 +31,13 @@ func TestGetKinesisShardUsage(t *testing.T) {
 	}
 	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: nil}
 
-	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("kinesis", "Shards per Region", float64(10), false),
 		},
 	}
-	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
-		Resp: mockedSvcQuotaOutput,
+	conf.ServiceQuotas = mockedScvQuotaClient{
+		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
 	}
 
 	kinesisChecker := NewKinesisChecker()
@@ -57,13 +57,13 @@ func TestGetKinesisShardUsageError(t *testing.T) {
 	}
 	conf.Kinesis = mockedKinesisDescribeLimitsMsg{Resp: mockedkinesisOutput, Error: errors.New("test error")}
 
-	mockedSvcQuotaOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+	mockedSvcQuotaOutput := servicequotas.ListServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("kinesis", "Shards per Region", float64(10), false),
 		},
 	}
-	conf.ServiceQuotas = mockedListAWSDefaultServiceQuotasPagesMsgs{
-		Resp: mockedSvcQuotaOutput,
+	conf.ServiceQuotas = mockedScvQuotaClient{
+		ListServiceQuotasOutputResp: mockedSvcQuotaOutput,
 	}
 
 	kinesisChecker := NewKinesisChecker()

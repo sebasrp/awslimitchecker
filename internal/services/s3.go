@@ -23,7 +23,7 @@ func NewS3Checker() Svcquota {
 func (c ServiceChecker) getS3BucketUsage() (ret []AWSQuotaInfo) {
 	ret = []AWSQuotaInfo{}
 	result, err := conf.S3.ListBuckets(nil)
-	quota := c.GetAllDefaultQuotas()["Buckets"]
+	quota := c.GetAllAppliedQuotas()["Buckets"]
 	if err != nil {
 		fmt.Printf("Unable to list buckets, %v", err)
 		return

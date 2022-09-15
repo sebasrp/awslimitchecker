@@ -27,17 +27,26 @@ func NewQuota(svcName string, quotaName string, quotaValue float64, isGlobal boo
 	}
 }
 
-type mockedListAWSDefaultServiceQuotasPagesMsgs struct {
+type mockedScvQuotaClient struct {
 	servicequotasiface.ServiceQuotasAPI
-	Resp  servicequotas.ListAWSDefaultServiceQuotasOutput
-	Error error
+	ListAWSDefaultServiceQuotasOutputResp  servicequotas.ListAWSDefaultServiceQuotasOutput
+	ListAWSDefaultServiceQuotasOutputError error
+	ListServiceQuotasOutputResp            servicequotas.ListServiceQuotasOutput
+	ListServiceQuotasOutputError           error
 }
 
-func (m mockedListAWSDefaultServiceQuotasPagesMsgs) ListAWSDefaultServiceQuotasPages(
+func (m mockedScvQuotaClient) ListAWSDefaultServiceQuotasPages(
 	input *servicequotas.ListAWSDefaultServiceQuotasInput,
 	fn func(*servicequotas.ListAWSDefaultServiceQuotasOutput, bool) bool) error {
-	fn(&m.Resp, false)
-	return m.Error
+	fn(&m.ListAWSDefaultServiceQuotasOutputResp, false)
+	return m.ListAWSDefaultServiceQuotasOutputError
+}
+
+func (m mockedScvQuotaClient) ListServiceQuotasPages(
+	input *servicequotas.ListServiceQuotasInput,
+	fn func(*servicequotas.ListServiceQuotasOutput, bool) bool) error {
+	fn(&m.ListServiceQuotasOutputResp, false)
+	return m.ListServiceQuotasOutputError
 }
 
 func TestNewServiceCheckerImpl(t *testing.T) {
@@ -53,12 +62,12 @@ func TestGetUsage(t *testing.T) {
 			return
 		},
 	}
-	mockedDefaultQuotasOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+	mockedDefaultQuotasOutput := servicequotas.ListServiceQuotasOutput{
 		Quotas: []*servicequotas.ServiceQuota{
 			NewQuota("testServiceName", "testQuotaName", float64(100), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{Resp: mockedDefaultQuotasOutput}
+	mockedSvcQuotaClient := mockedScvQuotaClient{ListServiceQuotasOutputResp: mockedDefaultQuotasOutput}
 	testChecker := NewTestChecker(mockedSvcQuotaClient, supportedQuotas)
 	assert.Equal(t, 1, len(testChecker.GetUsage()))
 }
@@ -69,7 +78,7 @@ func TestGetAllDefaultQuotas(t *testing.T) {
 			NewQuota("testServiceName", "testQuotaName", float64(100), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{Resp: mockedOutput}
+	mockedSvcQuotaClient := mockedScvQuotaClient{ListAWSDefaultServiceQuotasOutputResp: mockedOutput}
 	testChecker := NewTestChecker(mockedSvcQuotaClient, nil)
 	assert.Equal(t, 1, len(testChecker.GetAllDefaultQuotas()))
 }
@@ -80,9 +89,9 @@ func TestGetAllDefaultQuotasError(t *testing.T) {
 			NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false),
 		},
 	}
-	mockedSvcQuotaClient := mockedListAWSDefaultServiceQuotasPagesMsgs{
-		Resp:  mockedOutput,
-		Error: errors.New("test error"),
+	mockedSvcQuotaClient := mockedScvQuotaClient{
+		ListAWSDefaultServiceQuotasOutputResp:  mockedOutput,
+		ListAWSDefaultServiceQuotasOutputError: errors.New("test error"),
 	}
 	testChecker := NewTestChecker(mockedSvcQuotaClient, nil)
 	assert.Empty(t, testChecker.GetAllDefaultQuotas())
