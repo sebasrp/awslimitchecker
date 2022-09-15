@@ -36,6 +36,22 @@ func TestGetUsage(t *testing.T) {
 }
 
 func TestGetAllDefaultQuotas(t *testing.T) {
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(nil)
+	assert.Equal(t, 1, len(testChecker.GetAllAppliedQuotas()))
+}
+
+func TestGetAllDefaultQuotasError(t *testing.T) {
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false)},
+		errors.New("test error"))
+	testChecker := NewTestChecker(nil)
+	assert.Empty(t, testChecker.GetAllAppliedQuotas())
+}
+
+func TestGetAllAppliedQuotas(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
 		nil)
@@ -43,7 +59,7 @@ func TestGetAllDefaultQuotas(t *testing.T) {
 	assert.Equal(t, 1, len(testChecker.GetAllDefaultQuotas()))
 }
 
-func TestGetAllDefaultQuotasError(t *testing.T) {
+func TestGetAllAppliedQuotasError(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false)},
 		errors.New("test error"))
