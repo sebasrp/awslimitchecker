@@ -35,7 +35,7 @@ func TestGetUsage(t *testing.T) {
 	assert.Equal(t, 1, len(testChecker.GetUsage()))
 }
 
-func TestGetAllDefaultQuotas(t *testing.T) {
+func TestGetAllAppliedQuotas(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
 		nil)
@@ -43,7 +43,27 @@ func TestGetAllDefaultQuotas(t *testing.T) {
 	assert.Equal(t, 1, len(testChecker.GetAllAppliedQuotas()))
 }
 
-func TestGetAllDefaultQuotasError(t *testing.T) {
+func TestGetAllAppliedQuotasFallback(t *testing.T) {
+	mockedListServiceQuotasOutput := servicequotas.ListServiceQuotasOutput{
+		Quotas: []*servicequotas.ServiceQuota{NewQuota("servicename1", "testQuotaName1", float64(100), false)},
+	}
+	mockedListAWSDefaultServiceQuotasOutput := servicequotas.ListAWSDefaultServiceQuotasOutput{
+		Quotas: []*servicequotas.ServiceQuota{NewQuota("servicename2", "testQuotaName2", float64(100), false)},
+	}
+
+	conf.ServiceQuotas = mockedScvQuotaClient{
+		ListServiceQuotasOutputResp:           mockedListServiceQuotasOutput,
+		ListAWSDefaultServiceQuotasOutputResp: mockedListAWSDefaultServiceQuotasOutput,
+	}
+
+	testChecker := NewTestChecker(nil)
+	appliedQuotas := testChecker.GetAllAppliedQuotas()
+	assert.Equal(t, 2, len(appliedQuotas))
+	assert.Contains(t, appliedQuotas, "testQuotaName1")
+	assert.Contains(t, appliedQuotas, "testQuotaName2")
+}
+
+func TestGetAllAppliedQuotasError(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false)},
 		errors.New("test error"))
@@ -51,7 +71,7 @@ func TestGetAllDefaultQuotasError(t *testing.T) {
 	assert.Empty(t, testChecker.GetAllAppliedQuotas())
 }
 
-func TestGetAllAppliedQuotas(t *testing.T) {
+func TestGetAllDefaultQuotas(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceName", "testQuotaName", float64(100), false)},
 		nil)
@@ -59,7 +79,7 @@ func TestGetAllAppliedQuotas(t *testing.T) {
 	assert.Equal(t, 1, len(testChecker.GetAllDefaultQuotas()))
 }
 
-func TestGetAllAppliedQuotasError(t *testing.T) {
+func TestGetAllDefaultQuotasError(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListAWSDefaultServiceQuotas(
 		[]*servicequotas.ServiceQuota{NewQuota("testServiceNam2e", "testQuotaName2", float64(100), false)},
 		errors.New("test error"))

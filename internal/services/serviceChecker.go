@@ -56,7 +56,16 @@ func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
 func (c ServiceChecker) GetAllAppliedQuotas() map[string]AWSQuotaInfo {
 	if len(c.AppliedQuotas) == 0 {
 		c.AppliedQuotas = c.getServiceAppliedQuotas()
+		// sometimes applied quotas does not include all default quotas, so we need
+		// to make a union between applied and default - taking applied as source
+		// of truth
+		for name, quota := range c.GetAllDefaultQuotas() {
+			if _, ok := c.AppliedQuotas[name]; !ok {
+				c.AppliedQuotas[name] = quota
+			}
+		}
 	}
+
 	return c.AppliedQuotas
 }
 
