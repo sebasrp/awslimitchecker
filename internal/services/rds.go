@@ -14,8 +14,9 @@ type RdsClientInterface interface {
 func NewRdsChecker() Svcquota {
 	serviceCode := "rds"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
-		"DB instances": ServiceChecker.getRdsInstancesCountUsage,
-		"DB clusters":  ServiceChecker.getRdsClusterCountUsage,
+		"DB instances":          ServiceChecker.getRdsInstancesCountUsage,
+		"DB clusters":           ServiceChecker.getRdsClusterCountUsage,
+		"Reserved DB instances": ServiceChecker.getRdsReservedDbCountUsage,
 	}
 	requiredPermissions := []string{"rds:DescribeAccountAttributes"}
 
@@ -56,6 +57,16 @@ func (c ServiceChecker) getRdsClusterCountUsage() (ret []AWSQuotaInfo) {
 	ret = []AWSQuotaInfo{}
 	quotaInfo := c.GetAllAppliedQuotas()["DB clusters"]
 	if val, ok := c.getRdsAccountQuotas()["DBClusters"]; ok {
+		quotaInfo.UsageValue = float64(*val.Used)
+	}
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getRdsReservedDbCountUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["Reserved DB instances"]
+	if val, ok := c.getRdsAccountQuotas()["ReservedDBInstances"]; ok {
 		quotaInfo.UsageValue = float64(*val.Used)
 	}
 	ret = append(ret, quotaInfo)

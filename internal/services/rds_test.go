@@ -110,3 +110,25 @@ func TestGetRdsClusterCountUsage(t *testing.T) {
 	assert.Equal(t, float64(1), quota.UsageValue)
 	t.Cleanup(func() { rdsAccountQuota = map[string]*rds.AccountQuota{} })
 }
+
+func TestGetRdsReservedDbCountUsage(t *testing.T) {
+	mockedDescribeAccountAttributesOutput := rds.DescribeAccountAttributesOutput{
+		AccountQuotas: []*rds.AccountQuota{{AccountQuotaName: aws.String("ReservedDBInstances"), Max: aws.Int64(100), Used: aws.Int64(10)}},
+	}
+	conf.Rds = mockedRdsClient{DescribeAccountAttributesResp: mockedDescribeAccountAttributesOutput, DescribeAccountAttributesError: nil}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("rds", "Reserved DB instance", float64(200), false)},
+		nil)
+
+	rdsChecker := NewRdsChecker()
+	svcChecker := rdsChecker.(*ServiceChecker)
+	actual := svcChecker.getRdsReservedDbCountUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "rds", quota.Service)
+	assert.Equal(t, float64(200), quota.QuotaValue)
+	assert.Equal(t, float64(10), quota.UsageValue)
+	t.Cleanup(func() { rdsAccountQuota = map[string]*rds.AccountQuota{} })
+}
