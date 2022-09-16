@@ -1,7 +1,9 @@
 
 # awslimitchecker
 
-[![codecov](https://codecov.io/gh/sebasrp/awslimitchecker/branch/main/graph/badge.svg?token=Y5AOHU08FU)](https://codecov.io/gh/sebasrp/awslimitchecker) [![Go Report Card](https://goreportcard.com/badge/github.com/sebasrp/awslimitchecker)](https://goreportcard.com/report/github.com/sebasrp/awslimitchecker)
+[![codecov](https://codecov.io/gh/sebasrp/awslimitchecker/branch/main/graph/badge.svg?token=Y5AOHU08FU)](https://codecov.io/gh/sebasrp/awslimitchecker)
+[![license](https://img.shields.io/github/license/sebasrp/awslimitchecker)](https://tldrlegal.com/license/mit-license)
+[![go Report Card](https://goreportcard.com/badge/github.com/sebasrp/awslimitchecker)](https://goreportcard.com/report/github.com/sebasrp/awslimitchecker)
 
 Simple module to programatically retrieve your AWS account limits (whether they are supporter by servicequotas or not). It also provide a lightweight cli program to access the data.
 
