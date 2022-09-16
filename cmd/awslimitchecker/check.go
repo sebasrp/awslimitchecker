@@ -36,6 +36,13 @@ var check = &cobra.Command{
 		console := viper.GetBool("console")
 		csvFlag := viper.GetBool("csv")
 
+		if awsProfile == "" {
+			fmt.Printf("Unable to retrieve awsprofile. Please provide a valid aws profile")
+		}
+		if region == "" {
+			fmt.Printf("Unable to retrieve region. Please provide a valid region")
+		}
+
 		usage := awslimitchecker.GetLimits(awsService, awsProfile, region)
 
 		if console {
