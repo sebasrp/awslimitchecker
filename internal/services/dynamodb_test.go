@@ -6,14 +6,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type mockedListTablesPagesMsgs struct {
-	dynamodbiface.DynamoDBAPI
+	DynamodbClientInterface
 	Resp  dynamodb.ListTablesOutput
 	Error error
 }
