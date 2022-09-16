@@ -15,7 +15,7 @@ Not many services are currently supported, but it's fairly simple to add them - 
 
 ## Features
 
-* Check current AWS resource usage against AWS ServiceQuota limits
+* Check current AWS resource usage against AWS ServiceQuota limits (see [wiki - Supported Quotas](https://github.com/sebasrp/awslimitchecker/wiki/Supported-Quotas) for complete list)
 * Retrieves current usage
 * Compare current usage to limits
 * When available, retrieves applied (different than default) values
@@ -64,10 +64,11 @@ To run the latest:
 ```shell
 cd awslimitchecker
 go build ./... && go install ./...
-awslimitechchecker --help
+awslimitchecker --help
 ```
 
 When making changes:
 
 1. make sure you add relevant tests (there is a github action doing codecov validation)
 2. make sure the existing tests pass `go test ./...` from root directory
+3. make sure the changes passes [golangci-lint](https://golangci-lint.run/) `golangci-lint run` from root directory
