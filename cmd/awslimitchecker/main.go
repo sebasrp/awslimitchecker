@@ -50,11 +50,26 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "output results to a csv file")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enables verbose output")
 
-	viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
-	viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
-	viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
-	viper.BindPFlag("csv", rootCmd.PersistentFlags().Lookup("csv"))
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	err := viper.BindPFlag("awsprofile", rootCmd.PersistentFlags().Lookup("awsprofile"))
+	if err != nil {
+		fmt.Printf("error binding 'awsprofile' flag. %v", err)
+	}
+	err = viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
+	if err != nil {
+		fmt.Printf("error binding 'region' flag. %v", err)
+	}
+	err = viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
+	if err != nil {
+		fmt.Printf("error binding 'console' flag. %v", err)
+	}
+	err = viper.BindPFlag("csv", rootCmd.PersistentFlags().Lookup("csv"))
+	if err != nil {
+		fmt.Printf("error binding 'region' flag. %v", err)
+	}
+	err = viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	if err != nil {
+		fmt.Printf("error binding 'region' flag. %v", err)
+	}
 
 	viper.SetDefault("awsprofile", "default")
 	viper.SetDefault("region", "us-east-1")
