@@ -6,14 +6,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type mockedEksClient struct {
-	eksiface.EKSAPI
+	EksClientInterface
 	ListClustersPagesResp    eks.ListClustersOutput
 	ListClustersPagesError   error
 	ListNodegroupsPagesResp  eks.ListNodegroupsOutput
