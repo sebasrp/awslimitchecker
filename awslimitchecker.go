@@ -7,11 +7,12 @@ import (
 )
 
 var SupportedAwsServices = map[string]func() services.Svcquota{
-	"dynamodb": services.NewDynamoDbChecker,
-	"eks":      services.NewEksChecker,
-	"kinesis":  services.NewKinesisChecker,
-	"rds":      services.NewRdsChecker,
-	"s3":       services.NewS3Checker,
+	"dynamodb":    services.NewDynamoDbChecker,
+	"eks":         services.NewEksChecker,
+	"elasticache": services.NewElastiCacheChecker,
+	"kinesis":     services.NewKinesisChecker,
+	"rds":         services.NewRdsChecker,
+	"s3":          services.NewS3Checker,
 }
 
 func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {

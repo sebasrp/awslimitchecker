@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/aws/aws-sdk-go/service/elasticache"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -20,6 +21,7 @@ type Config struct {
 	Session       *session.Session
 	DynamoDb      DynamodbClientInterface
 	Eks           EksClientInterface
+	ElastiCache   ElastiCacheClientInterface
 	Kinesis       KinesisClientInterface
 	Rds           RdsClientInterface
 	S3            S3ClientInterface
@@ -38,6 +40,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		Session:       &sess,
 		DynamoDb:      dynamodb.New(&sess),
 		Eks:           eks.New(&sess),
+		ElastiCache:   elasticache.New(&sess),
 		Kinesis:       kinesis.New(&sess),
 		Rds:           rds.New(&sess),
 		S3:            s3.New(&sess),
