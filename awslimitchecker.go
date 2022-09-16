@@ -17,7 +17,7 @@ var SupportedAwsServices = map[string]func() services.Svcquota{
 func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
 	_, err := services.InitializeConfig(awsprofile, region)
 	if err != nil {
-		fmt.Errorf("Unable to create AWS session, %v", err)
+		fmt.Printf("Unable to create AWS session, %v", err)
 		return
 	}
 

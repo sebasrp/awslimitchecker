@@ -53,7 +53,7 @@ func createAwsSession(awsprofile string, region string) (session.Session, error)
 		Credentials: credentials.NewSharedCredentials("", awsprofile)},
 	)
 	if err != nil {
-		fmt.Errorf("Unable to create AWS session, %v", err)
+		fmt.Printf("Unable to create AWS session, %v", err)
 	}
 	return *sess, err
 }
