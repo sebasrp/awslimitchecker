@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/elasticache"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -23,7 +24,8 @@ type Config struct {
 	DynamoDb      DynamodbClientInterface
 	Eks           EksClientInterface
 	ElastiCache   ElastiCacheClientInterface
-	Elbv2         Elbv2ClientInterface
+	Elb           ElbClientInterface   // for classic load balancers
+	Elbv2         Elbv2ClientInterface // for ALB, NLB load balancers
 	Kinesis       KinesisClientInterface
 	Rds           RdsClientInterface
 	S3            S3ClientInterface
@@ -43,7 +45,8 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		DynamoDb:      dynamodb.New(&sess),
 		Eks:           eks.New(&sess),
 		ElastiCache:   elasticache.New(&sess),
-		Elbv2:         elbv2.New(&sess),
+		Elb:           elb.New(&sess),   // for classic load balancers
+		Elbv2:         elbv2.New(&sess), // for ALB and NLB load balancers
 		Kinesis:       kinesis.New(&sess),
 		Rds:           rds.New(&sess),
 		S3:            s3.New(&sess),

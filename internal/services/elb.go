@@ -6,8 +6,14 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 )
+
+type ElbClientInterface interface {
+	DescribeAccountLimits(input *elb.DescribeAccountLimitsInput) (*elb.DescribeAccountLimitsOutput, error)
+	DescribeLoadBalancersPages(input *elb.DescribeLoadBalancersInput, fn func(*elb.DescribeLoadBalancersOutput, bool) bool) error
+}
 
 type Elbv2ClientInterface interface {
 	DescribeAccountLimits(input *elbv2.DescribeAccountLimitsInput) (*elbv2.DescribeAccountLimitsOutput, error)
@@ -27,22 +33,26 @@ func NewElbChecker() Svcquota {
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
-var elbAccountQuota map[string]*elbv2.Limit = map[string]*elbv2.Limit{}
+var elbAccountQuota map[string]float64 = map[string]float64{}
 
-func (c ServiceChecker) getElbAccountQuotas() (ret map[string]*elbv2.Limit) {
+func (c ServiceChecker) getElbAccountQuotas() (ret map[string]float64) {
 	ret = elbAccountQuota
 	if len(elbAccountQuota) != 0 {
 		return
 	}
 
-	result, err := conf.Elbv2.DescribeAccountLimits(nil)
-	if err != nil {
-		fmt.Printf("Unable to retrieve elb account attributes, %v", err)
+	resultElb, errElb := conf.Elb.DescribeAccountLimits(nil)
+	resultElbv2, errElbv2 := conf.Elbv2.DescribeAccountLimits(nil)
+	if errElb != nil || errElbv2 != nil {
+		fmt.Printf("Unable to retrieve elb account attributes. elb: %v; elbv2: %v", errElb, errElbv2)
 		return
 	}
 
-	for _, q := range result.Limits {
-		elbAccountQuota[aws.StringValue(q.Name)] = q
+	for _, q := range resultElb.Limits {
+		elbAccountQuota[aws.StringValue(q.Name)], _ = strconv.ParseFloat(strings.TrimSpace(*q.Max), 64)
+	}
+	for _, r := range resultElbv2.Limits {
+		elbAccountQuota[aws.StringValue(r.Name)], _ = strconv.ParseFloat(strings.TrimSpace(*r.Max), 64)
 	}
 	return
 }
@@ -68,8 +78,7 @@ func (c ServiceChecker) getElbApplicationLoadBalancerUsage() (ret []AWSQuotaInfo
 
 	// we then get the quota info from the service itself (overwrites servicequotas')
 	if val, ok := c.getElbAccountQuotas()["application-load-balancers"]; ok {
-		quotaFloat, _ := strconv.ParseFloat(strings.TrimSpace(*val.Max), 64)
-		quotaInfo.QuotaValue = quotaFloat
+		quotaInfo.QuotaValue = val
 	}
 
 	quotaInfo.UsageValue = float64(len(albs))
