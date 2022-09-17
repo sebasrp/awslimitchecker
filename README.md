@@ -25,7 +25,7 @@ Not many services are currently supported, but it's fairly simple to add them - 
 
 A utility `awslimitchecker` CLI is provided, that exposes the module through a simple interface.
 
-## Usage
+### Usage
 
 Make sure you are logged into your AWS account (`aws configure` or through environment variables). This account needs to have the required IAM permissions.
 
@@ -55,6 +55,18 @@ awslimitchecker check all
 
 ```shell
 awslimitchecker check all --csv
+```
+
+### Configuration file
+
+Tired of manually selecting the different parameters? You can save those in a file and provide it with the `--config flag` - or just place it under `$HOME/.awslimitchecker` to be automatically picked up. The format and options supported are (order does not matter)
+
+```yaml
+awsprofile: <name of profile>
+region: <region to evaluate>
+console: true /false
+csv: true / false
+verbose: true / false
 ```
 
 ## Development
