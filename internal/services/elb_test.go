@@ -171,3 +171,63 @@ func TestGetElbApplicationLoadBalancerUsageError(t *testing.T) {
 	assert.Len(t, actual, 0)
 	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
 }
+
+func TestGetElbClassicLoadBalancerUsage(t *testing.T) {
+	mockedDescribeAccountLimitsOutput := elb.DescribeAccountLimitsOutput{
+		Limits: []*elb.Limit{{Name: aws.String("classic-load-balancers"), Max: aws.String("200")}},
+	}
+	mockedDescribeLoadBalancersOutput := elb.DescribeLoadBalancersOutput{
+		LoadBalancerDescriptions: []*elb.LoadBalancerDescription{
+			{LoadBalancerName: aws.String("foo")},
+			{LoadBalancerName: aws.String("bar")},
+			{LoadBalancerName: aws.String("baz")},
+		},
+	}
+	conf.Elbv2 = mockedElbv2Client{DescribeAccountLimitsResp: elbv2.DescribeAccountLimitsOutput{}}
+	conf.Elb = mockedElbClient{DescribeAccountLimitsResp: mockedDescribeAccountLimitsOutput, DescribeLoadBalancersPagesRest: mockedDescribeLoadBalancersOutput}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("elasticloadbalancing", "Classic Load Balancers per Region", float64(100), false)},
+		nil)
+
+	elbChecker := NewElbChecker()
+	svcChecker := elbChecker.(*ServiceChecker)
+	actual := svcChecker.getElbClassicLoadBalancerUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "elasticloadbalancing", quota.Service)
+	assert.Equal(t, float64(200), quota.QuotaValue)
+	assert.Equal(t, float64(3), quota.UsageValue)
+	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
+}
+
+func TestGetElbClassicLoadBalancerUsageError(t *testing.T) {
+	mockedDescribeAccountLimitsOutput := elb.DescribeAccountLimitsOutput{
+		Limits: []*elb.Limit{{Name: aws.String("classic-load-balancers"), Max: aws.String("200")}},
+	}
+	mockedDescribeLoadBalancersOutput := elb.DescribeLoadBalancersOutput{
+		LoadBalancerDescriptions: []*elb.LoadBalancerDescription{
+			{LoadBalancerName: aws.String("foo")},
+			{LoadBalancerName: aws.String("bar")},
+			{LoadBalancerName: aws.String("baz")},
+		},
+	}
+	conf.Elbv2 = mockedElbv2Client{DescribeAccountLimitsResp: elbv2.DescribeAccountLimitsOutput{}}
+	conf.Elb = mockedElbClient{
+		DescribeAccountLimitsResp:      mockedDescribeAccountLimitsOutput,
+		DescribeLoadBalancersPagesRest: mockedDescribeLoadBalancersOutput, DescribeLoadBalancersPagesError: errors.New("test error")}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("elasticloadbalancing", "Classic Load Balancers per Region", float64(100), false)},
+		nil)
+
+	elbChecker := NewElbChecker()
+	svcChecker := elbChecker.(*ServiceChecker)
+	actual := svcChecker.getElbClassicLoadBalancerUsage()
+	expected := []AWSQuotaInfo{}
+
+	assert.Len(t, actual, 0)
+	assert.Equal(t, expected, actual)
+	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
+}

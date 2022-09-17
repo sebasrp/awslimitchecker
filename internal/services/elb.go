@@ -23,6 +23,7 @@ type Elbv2ClientInterface interface {
 func NewElbChecker() Svcquota {
 	serviceCode := "elasticloadbalancing"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
+		"Classic Load Balancers per Region":     ServiceChecker.getElbClassicLoadBalancerUsage,
 		"Application Load Balancers per Region": ServiceChecker.getElbApplicationLoadBalancerUsage,
 	}
 	requiredPermissions := []string{
@@ -82,6 +83,31 @@ func (c ServiceChecker) getElbApplicationLoadBalancerUsage() (ret []AWSQuotaInfo
 	}
 
 	quotaInfo.UsageValue = float64(len(albs))
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getElbClassicLoadBalancerUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["Classic Load Balancers per Region"]
+
+	// we need to iterate through all LBs and check which ones are NLB vs ALB
+	classic := []*elb.LoadBalancerDescription{}
+	err := conf.Elb.DescribeLoadBalancersPages(&elb.DescribeLoadBalancersInput{}, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
+		classic = append(classic, p.LoadBalancerDescriptions...)
+		return true // continue paging
+	})
+	if err != nil {
+		fmt.Printf("failed to retrieve classic load balancers, %v", err)
+		return
+	}
+
+	// we then get the quota info from the service itself (overwrites servicequotas')
+	if val, ok := c.getElbAccountQuotas()["classic-load-balancers"]; ok {
+		quotaInfo.QuotaValue = val
+	}
+
+	quotaInfo.UsageValue = float64(len(classic))
 	ret = append(ret, quotaInfo)
 	return
 }
