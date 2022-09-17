@@ -117,9 +117,12 @@ func TestGetElbAccountQuotasExists(t *testing.T) {
 	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
 }
 
-func TestGetElbApplicationLoadBalancerUsage(t *testing.T) {
+func TestGetElv2LoadBalancerUsage(t *testing.T) {
 	mockedDescribeAccountLimitsOutput := elbv2.DescribeAccountLimitsOutput{
-		Limits: []*elbv2.Limit{{Name: aws.String("application-load-balancers"), Max: aws.String("200")}},
+		Limits: []*elbv2.Limit{
+			{Name: aws.String("application-load-balancers"), Max: aws.String("200")},
+			{Name: aws.String("network-load-balancers"), Max: aws.String("300")},
+		},
 	}
 	mockedDescribeLoadBalancersOutput := elbv2.DescribeLoadBalancersOutput{
 		LoadBalancers: []*elbv2.LoadBalancer{
@@ -132,24 +135,38 @@ func TestGetElbApplicationLoadBalancerUsage(t *testing.T) {
 	conf.Elb = mockedElbClient{DescribeAccountLimitsResp: elb.DescribeAccountLimitsOutput{}}
 
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("elasticloadbalancing", "Application Load Balancers per Region", float64(100), false)},
+		[]*servicequotas.ServiceQuota{
+			NewQuota("elasticloadbalancing", "Application Load Balancers per Region", float64(100), false),
+			NewQuota("elasticloadbalancing", "Network Load Balancers per Region", float64(200), false),
+		},
 		nil)
 
 	elbChecker := NewElbChecker()
 	svcChecker := elbChecker.(*ServiceChecker)
-	actual := svcChecker.getElbApplicationLoadBalancerUsage()
 
-	assert.Len(t, actual, 1)
-	quota := actual[0]
-	assert.Equal(t, "elasticloadbalancing", quota.Service)
-	assert.Equal(t, float64(200), quota.QuotaValue)
-	assert.Equal(t, float64(1), quota.UsageValue)
+	actualALB := svcChecker.getElbApplicationLoadBalancerUsage()
+	assert.Len(t, actualALB, 1)
+	albQuota := actualALB[0]
+	assert.Equal(t, "elasticloadbalancing", albQuota.Service)
+	assert.Equal(t, float64(200), albQuota.QuotaValue)
+	assert.Equal(t, float64(1), albQuota.UsageValue)
+
+	actualNLB := svcChecker.getElbNetworkLoadBalancerUsage()
+	assert.Len(t, actualNLB, 1)
+	nlbQuota := actualNLB[0]
+	assert.Equal(t, "elasticloadbalancing", nlbQuota.Service)
+	assert.Equal(t, float64(300), nlbQuota.QuotaValue)
+	assert.Equal(t, float64(1), nlbQuota.UsageValue)
+
 	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
 }
 
-func TestGetElbApplicationLoadBalancerUsageError(t *testing.T) {
+func TestGetElbv2BalancerUsageError(t *testing.T) {
 	mockedDescribeAccountLimitsOutput := elbv2.DescribeAccountLimitsOutput{
-		Limits: []*elbv2.Limit{{Name: aws.String("application-load-balancers"), Max: aws.String("200")}},
+		Limits: []*elbv2.Limit{
+			{Name: aws.String("application-load-balancers"), Max: aws.String("200")},
+			{Name: aws.String("network-load-balancers"), Max: aws.String("300")},
+		},
 	}
 	mockedDescribeLoadBalancersOutput := elbv2.DescribeLoadBalancersOutput{
 		LoadBalancers: []*elbv2.LoadBalancer{
@@ -161,14 +178,20 @@ func TestGetElbApplicationLoadBalancerUsageError(t *testing.T) {
 	conf.Elbv2 = mockedElbv2Client{DescribeAccountLimitsResp: mockedDescribeAccountLimitsOutput, DescribeLoadBalancersPagesRest: mockedDescribeLoadBalancersOutput, DescribeLoadBalancersPagesError: errors.New("test error")}
 
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("elasticloadbalancing", "Application Load Balancers per Region", float64(100), false)},
+		[]*servicequotas.ServiceQuota{
+			NewQuota("elasticloadbalancing", "Application Load Balancers per Region", float64(100), false),
+			NewQuota("elasticloadbalancing", "Network Load Balancers per Region", float64(200), false),
+		},
 		nil)
 
 	elbChecker := NewElbChecker()
 	svcChecker := elbChecker.(*ServiceChecker)
-	actual := svcChecker.getElbApplicationLoadBalancerUsage()
 
-	assert.Len(t, actual, 0)
+	actualALB := svcChecker.getElbApplicationLoadBalancerUsage()
+	assert.Len(t, actualALB, 0)
+
+	actualNLB := svcChecker.getElbNetworkLoadBalancerUsage()
+	assert.Len(t, actualNLB, 0)
 	t.Cleanup(func() { elbAccountQuota = map[string]float64{} })
 }
 

@@ -25,6 +25,7 @@ func NewElbChecker() Svcquota {
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Classic Load Balancers per Region":     ServiceChecker.getElbClassicLoadBalancerUsage,
 		"Application Load Balancers per Region": ServiceChecker.getElbApplicationLoadBalancerUsage,
+		"Network Load Balancers per Region":     ServiceChecker.getElbNetworkLoadBalancerUsage,
 	}
 	requiredPermissions := []string{
 		"elasticloadbalancing:DescribeLoadBalancers",
@@ -108,6 +109,35 @@ func (c ServiceChecker) getElbClassicLoadBalancerUsage() (ret []AWSQuotaInfo) {
 	}
 
 	quotaInfo.UsageValue = float64(len(classic))
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getElbNetworkLoadBalancerUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["Network Load Balancers per Region"]
+
+	// we need to iterate through all LBs and check which ones are NLB vs ALB
+	nlbs := []*elbv2.LoadBalancer{}
+	err := conf.Elbv2.DescribeLoadBalancersPages(&elbv2.DescribeLoadBalancersInput{}, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
+		for _, q := range p.LoadBalancers {
+			if *q.Type == "network" {
+				nlbs = append(nlbs, q)
+			}
+		}
+		return true // continue paging
+	})
+	if err != nil {
+		fmt.Printf("failed to retrieve network load balancers, %v", err)
+		return
+	}
+
+	// we then get the quota info from the service itself (overwrites servicequotas')
+	if val, ok := c.getElbAccountQuotas()["network-load-balancers"]; ok {
+		quotaInfo.QuotaValue = val
+	}
+
+	quotaInfo.UsageValue = float64(len(nlbs))
 	ret = append(ret, quotaInfo)
 	return
 }
