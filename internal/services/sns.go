@@ -8,12 +8,14 @@ import (
 
 type SnsClientInterface interface {
 	ListTopicsPages(input *sns.ListTopicsInput, fn func(*sns.ListTopicsOutput, bool) bool) error
+	ListSubscriptionsPages(input *sns.ListSubscriptionsInput, fn func(*sns.ListSubscriptionsOutput, bool) bool) error
 }
 
 func NewSnsChecker() Svcquota {
 	serviceCode := "sns"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
-		"Topics per Account": ServiceChecker.getSnsTopicsUsage,
+		"Topics per Account":                ServiceChecker.getSnsTopicsUsage,
+		"Pending Subscriptions per Account": ServiceChecker.getSnsPendingSubsUsage,
 	}
 	requiredPermissions := []string{"sns:ListTopics"}
 
@@ -35,6 +37,25 @@ func (c ServiceChecker) getSnsTopicsUsage() (ret []AWSQuotaInfo) {
 	}
 
 	quotaInfo.UsageValue = float64(len(topics))
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getSnsPendingSubsUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo := c.GetAllAppliedQuotas()["Pending Subscriptions per Account"]
+
+	subscriptions := []*sns.Subscription{}
+	err := conf.Sns.ListSubscriptionsPages(&sns.ListSubscriptionsInput{}, func(p *sns.ListSubscriptionsOutput, lastPage bool) bool {
+		subscriptions = append(subscriptions, p.Subscriptions...)
+		return true // continue paging
+	})
+	if err != nil {
+		fmt.Printf("failed to retrieve sns subscriptions, %v", err)
+		return
+	}
+
+	quotaInfo.UsageValue = float64(len(subscriptions))
 	ret = append(ret, quotaInfo)
 	return
 }

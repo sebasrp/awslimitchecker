@@ -13,13 +13,21 @@ import (
 
 type mockedSnsClient struct {
 	SnsClientInterface
-	ListTopicPagesResp  sns.ListTopicsOutput
-	ListTopicPagesError error
+	ListTopicPagesResp         sns.ListTopicsOutput
+	ListTopicPagesError        error
+	ListSubscriptionsPagesRest sns.ListSubscriptionsOutput
+	ListSubscriptionsPagesErr  error
 }
 
 func (m mockedSnsClient) ListTopicsPages(input *sns.ListTopicsInput, fn func(*sns.ListTopicsOutput, bool) bool) error {
 	fn(&m.ListTopicPagesResp, false)
 	return m.ListTopicPagesError
+}
+
+func (m mockedSnsClient) ListSubscriptionsPages(
+	input *sns.ListSubscriptionsInput, fn func(*sns.ListSubscriptionsOutput, bool) bool) error {
+	fn(&m.ListSubscriptionsPagesRest, false)
+	return m.ListSubscriptionsPagesErr
 }
 
 func TestNewSnsCheckerImpl(t *testing.T) {
@@ -60,6 +68,45 @@ func TestGetSnsTopicsUsageError(t *testing.T) {
 	snseChecker := NewSnsChecker()
 	svcChecker := snseChecker.(*ServiceChecker)
 	actual := svcChecker.getSnsTopicsUsage()
+
+	expected := []AWSQuotaInfo{}
+	assert.Equal(t, expected, actual)
+}
+
+func TestGetSnsPendingSubsUsage(t *testing.T) {
+	mockedOutput := sns.ListSubscriptionsOutput{
+		Subscriptions: []*sns.Subscription{{SubscriptionArn: aws.String("foo")}},
+	}
+	conf.Sns = mockedSnsClient{ListSubscriptionsPagesRest: mockedOutput}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("sns", "Pending Subscriptions per Account", float64(10), false)},
+		nil)
+
+	snseChecker := NewSnsChecker()
+	svcChecker := snseChecker.(*ServiceChecker)
+	actual := svcChecker.getSnsPendingSubsUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "sns", quota.Service)
+	assert.Equal(t, float64(10), quota.QuotaValue)
+	assert.Equal(t, float64(len(mockedOutput.Subscriptions)), quota.UsageValue)
+}
+
+func TestGetSnsPendingSubsUsageError(t *testing.T) {
+	mockedOutput := sns.ListSubscriptionsOutput{
+		Subscriptions: []*sns.Subscription{{SubscriptionArn: aws.String("foo")}},
+	}
+	conf.Sns = mockedSnsClient{ListSubscriptionsPagesRest: mockedOutput, ListSubscriptionsPagesErr: errors.New("test error")}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("sns", "Pending Subscriptions per Account", float64(10), false)},
+		nil)
+
+	snseChecker := NewSnsChecker()
+	svcChecker := snseChecker.(*ServiceChecker)
+	actual := svcChecker.getSnsPendingSubsUsage()
 
 	expected := []AWSQuotaInfo{}
 	assert.Equal(t, expected, actual)
