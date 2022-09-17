@@ -17,7 +17,7 @@ func NewSnsChecker() Svcquota {
 		"Topics per Account":                ServiceChecker.getSnsTopicsUsage,
 		"Pending Subscriptions per Account": ServiceChecker.getSnsPendingSubsUsage,
 	}
-	requiredPermissions := []string{"sns:ListTopics"}
+	requiredPermissions := []string{"sns:ListTopics", "sns:ListSubscriptions"}
 
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
