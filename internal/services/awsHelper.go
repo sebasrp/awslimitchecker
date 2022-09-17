@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
+	"github.com/aws/aws-sdk-go/service/sns"
 )
 
 var conf *Config = &Config{}
@@ -30,6 +31,7 @@ type Config struct {
 	Rds           RdsClientInterface
 	S3            S3ClientInterface
 	ServiceQuotas SvcQuotaClientInterface
+	Sns           SnsClientInterface
 }
 
 var InitializeConfig = initializeConfig
@@ -51,6 +53,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		Rds:           rds.New(&sess),
 		S3:            s3.New(&sess),
 		ServiceQuotas: servicequotas.New(&sess),
+		Sns:           sns.New(&sess),
 	}
 
 	return conf, nil

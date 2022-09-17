@@ -14,6 +14,7 @@ var SupportedAwsServices = map[string]func() services.Svcquota{
 	"kinesis":     services.NewKinesisChecker,
 	"rds":         services.NewRdsChecker,
 	"s3":          services.NewS3Checker,
+	"sns":         services.NewSnsChecker,
 }
 
 func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
