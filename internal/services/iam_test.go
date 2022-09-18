@@ -32,9 +32,7 @@ func TestGetIamAccountQuotas(t *testing.T) {
 	}
 	conf.Iam = mockedIamClient{GetAccountSummaryResp: mockedGetAccountSummaryOutput}
 
-	iamChecker := NewIamChecker()
-	svcChecker := iamChecker.(*ServiceChecker)
-	actual := svcChecker.getIamAccountQuotas()
+	actual, _ := getIamAccountQuotas()
 	assert.Len(t, actual, 1)
 	fooQuota := actual["foo"]
 	assert.NotNil(t, fooQuota)
@@ -50,9 +48,8 @@ func TestGetIamAccountQuotasError(t *testing.T) {
 	}
 	conf.Iam = mockedIamClient{GetAccountSummaryResp: mockedGetAccountSummaryOutput, GetAccountSummaryError: errors.New("test error")}
 
-	iamChecker := NewIamChecker()
-	svcChecker := iamChecker.(*ServiceChecker)
-	actual := svcChecker.getIamAccountQuotas()
+	actual, err := getIamAccountQuotas()
+	assert.NotNil(t, err)
 	assert.Len(t, actual, 0)
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
@@ -62,10 +59,61 @@ func TestGetIamAccountQuotasExists(t *testing.T) {
 		"foo": aws.Int64(100),
 		"bar": aws.Int64(200),
 	}
-	iamChecker := NewIamChecker()
-	svcChecker := iamChecker.(*ServiceChecker)
-	actual := svcChecker.getIamAccountQuotas()
+	actual, _ := getIamAccountQuotas()
 	assert.Len(t, actual, 2)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
+
+func TestIamSummaryToAWSQuotaInfo(t *testing.T) {
+	iamAccountQuota = map[string]*int64{
+		"foo":      aws.Int64(100),
+		"fooQuota": aws.Int64(200),
+	}
+
+	actual, _ := IamSummaryToAWSQuotaInfo("foo", "foo per Account")
+	assert.NotNil(t, actual)
+	assert.Equal(t, "iam", actual.Service)
+	assert.Equal(t, "foo per Account", actual.Name)
+	assert.Equal(t, float64(100), actual.UsageValue)
+	assert.Equal(t, float64(200), actual.QuotaValue)
+	assert.True(t, actual.Global)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
+
+func TestIamSummaryToAWSQuotaInfoEmpty(t *testing.T) {
+	iamAccountQuota = map[string]*int64{}
+
+	actual, _ := IamSummaryToAWSQuotaInfo("foo", "foo per Account")
+	expected := AWSQuotaInfo{}
+	assert.Equal(t, expected, actual)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
+
+func TestIamSummaryToAWSQuotaNoQuota(t *testing.T) {
+	iamAccountQuota = map[string]*int64{
+		"foo": aws.Int64(100),
+	}
+
+	actual, _ := IamSummaryToAWSQuotaInfo("foo", "foo per Account")
+	assert.NotNil(t, actual)
+	assert.Equal(t, "iam", actual.Service)
+	assert.Equal(t, "foo per Account", actual.Name)
+	assert.Equal(t, float64(100), actual.UsageValue)
+	assert.True(t, actual.Global)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
+
+func TestIamSummaryToAWSQuotaNoUsage(t *testing.T) {
+	iamAccountQuota = map[string]*int64{
+		"fooQuota": aws.Int64(200),
+	}
+
+	actual, _ := IamSummaryToAWSQuotaInfo("foo", "foo per Account")
+	assert.NotNil(t, actual)
+	assert.Equal(t, "iam", actual.Service)
+	assert.Equal(t, "foo per Account", actual.Name)
+	assert.Equal(t, float64(200), actual.QuotaValue)
+	assert.True(t, actual.Global)
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
 

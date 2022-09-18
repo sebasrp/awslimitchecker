@@ -22,7 +22,7 @@ func NewIamChecker() Svcquota {
 
 var iamAccountQuota map[string]*int64 = map[string]*int64{}
 
-func (c ServiceChecker) getIamAccountQuotas() (ret map[string]*int64) {
+func getIamAccountQuotas() (ret map[string]*int64, err error) {
 	ret = iamAccountQuota
 	if len(iamAccountQuota) != 0 {
 		return
@@ -40,23 +40,34 @@ func (c ServiceChecker) getIamAccountQuotas() (ret map[string]*int64) {
 	return
 }
 
-func (c ServiceChecker) getIamRolesUsage() (ret []AWSQuotaInfo) {
-	ret = []AWSQuotaInfo{}
-	if len(c.getIamAccountQuotas()) == 0 {
-		return
+func IamSummaryToAWSQuotaInfo(summaryName string, quotaName string) (ret AWSQuotaInfo, err error) {
+	ret = AWSQuotaInfo{}
+	quotas, err := getIamAccountQuotas()
+	if len(quotas) == 0 || err != nil {
+		return ret, err
 	}
 
-	rolesQuota := AWSQuotaInfo{
-		Service: c.ServiceCode,
-		Name:    "Roles per Account",
+	ret = AWSQuotaInfo{
+		Service: "iam",
+		Name:    quotaName,
 		Global:  true,
 	}
-	if val, ok := c.getIamAccountQuotas()["RolesQuota"]; ok {
-		rolesQuota.QuotaValue = float64(*val)
+	if val, ok := quotas[summaryName+"Quota"]; ok {
+		ret.QuotaValue = float64(*val)
 	}
-	if val, ok := iamAccountQuota["Roles"]; ok {
-		rolesQuota.UsageValue = float64(*val)
+	if val, ok := quotas[summaryName]; ok {
+		ret.UsageValue = float64(*val)
 	}
-	ret = append(ret, rolesQuota)
+	return
+}
+
+func (c ServiceChecker) getIamRolesUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+	quotaInfo, err := IamSummaryToAWSQuotaInfo("Roles", "Roles per Account")
+	if err != nil {
+		fmt.Printf("Unable to retrieve iam account summary, %v", err)
+		return
+	}
+	ret = append(ret, quotaInfo)
 	return
 }
