@@ -213,7 +213,7 @@ func TestGetIamGroupsUsageError(t *testing.T) {
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
 
-func TestGetIamInstanceProfilesUsageUsage(t *testing.T) {
+func TestGetIamInstanceProfilesUsage(t *testing.T) {
 	mockedGetAccountSummaryOutput := iam.GetAccountSummaryOutput{
 		SummaryMap: map[string]*int64{
 			"InstanceProfiles":      aws.Int64(10),
@@ -234,7 +234,7 @@ func TestGetIamInstanceProfilesUsageUsage(t *testing.T) {
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
 
-func TestTestGetIamInstanceProfilesUsageUsageError(t *testing.T) {
+func TestGetIamInstanceProfilesUsageUsageError(t *testing.T) {
 	conf.Iam = mockedIamClient{GetAccountSummaryError: errors.New("test error")}
 
 	iamChecker := NewIamChecker()
@@ -266,7 +266,7 @@ func TestGetIamPoliciesUsage(t *testing.T) {
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
 
-func TestTestGetIamPoliciesUsageError(t *testing.T) {
+func TestGetIamPoliciesUsageError(t *testing.T) {
 	conf.Iam = mockedIamClient{GetAccountSummaryError: errors.New("test error")}
 
 	iamChecker := NewIamChecker()
