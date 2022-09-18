@@ -13,11 +13,12 @@ type IamClientInterface interface {
 func NewIamChecker() Svcquota {
 	serviceCode := "iam"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
-		"Roles per Account":             ServiceChecker.getIamRolesUsage,
-		"Users per Account":             ServiceChecker.getIamUsersUsage,
-		"Groups per Account":            ServiceChecker.getIamGroupsUsage,
-		"Instance profiles per Account": ServiceChecker.getIamInstanceProfilesUsage,
-		"Policies per Account":          ServiceChecker.getIamPoliciesUsage,
+		"Roles per Account":               ServiceChecker.getIamRolesUsage,
+		"Users per Account":               ServiceChecker.getIamUsersUsage,
+		"Groups per Account":              ServiceChecker.getIamGroupsUsage,
+		"Instance profiles per Account":   ServiceChecker.getIamInstanceProfilesUsage,
+		"Policies per Account":            ServiceChecker.getIamPoliciesUsage,
+		"Server Certificates per Account": ServiceChecker.getIamServerCertificatesUsage,
 	}
 	requiredPermissions := []string{"iam:GetAccountSummary"}
 
@@ -99,6 +100,14 @@ func (c ServiceChecker) getIamInstanceProfilesUsage() (ret []AWSQuotaInfo) {
 
 func (c ServiceChecker) getIamPoliciesUsage() (ret []AWSQuotaInfo) {
 	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Policies", "Policies per Account"); err != nil {
+		return []AWSQuotaInfo{}
+	} else {
+		return []AWSQuotaInfo{quotaInfo}
+	}
+}
+
+func (c ServiceChecker) getIamServerCertificatesUsage() (ret []AWSQuotaInfo) {
+	if quotaInfo, err := IamSummaryToAWSQuotaInfo("ServerCertificates", "Server Certificates per Account"); err != nil {
 		return []AWSQuotaInfo{}
 	} else {
 		return []AWSQuotaInfo{quotaInfo}

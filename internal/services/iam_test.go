@@ -276,3 +276,35 @@ func TestTestGetIamPoliciesUsageError(t *testing.T) {
 	assert.Equal(t, expected, actual)
 	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
 }
+
+func TestGetIamServerCertificatesUsage(t *testing.T) {
+	mockedGetAccountSummaryOutput := iam.GetAccountSummaryOutput{
+		SummaryMap: map[string]*int64{
+			"ServerCertificates":      aws.Int64(10),
+			"ServerCertificatesQuota": aws.Int64(20),
+		},
+	}
+	conf.Iam = mockedIamClient{GetAccountSummaryResp: mockedGetAccountSummaryOutput}
+
+	iamChecker := NewIamChecker()
+	svcChecker := iamChecker.(*ServiceChecker)
+	actual := svcChecker.getIamServerCertificatesUsage()
+	assert.Len(t, actual, 1)
+	usage := actual[0]
+	assert.Equal(t, "iam", usage.Service)
+	assert.Equal(t, "Server Certificates per Account", usage.Name)
+	assert.Equal(t, float64(20), usage.QuotaValue)
+	assert.Equal(t, float64(10), usage.UsageValue)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
+
+func TestGetIamServerCertificatesUsageError(t *testing.T) {
+	conf.Iam = mockedIamClient{GetAccountSummaryError: errors.New("test error")}
+
+	iamChecker := NewIamChecker()
+	svcChecker := iamChecker.(*ServiceChecker)
+	actual := svcChecker.getIamServerCertificatesUsage()
+	expected := []AWSQuotaInfo{}
+	assert.Equal(t, expected, actual)
+	t.Cleanup(func() { iamAccountQuota = map[string]*int64{} })
+}
