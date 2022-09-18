@@ -13,8 +13,9 @@ type IamClientInterface interface {
 func NewIamChecker() Svcquota {
 	serviceCode := "iam"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
-		"Roles per Account": ServiceChecker.getIamRolesUsage,
-		"Users per Account": ServiceChecker.getIamUsersUsage,
+		"Roles per Account":  ServiceChecker.getIamRolesUsage,
+		"Users per Account":  ServiceChecker.getIamUsersUsage,
+		"Groups per Account": ServiceChecker.getIamGroupsUsage,
 	}
 	requiredPermissions := []string{"iam:GetAccountSummary"}
 
@@ -72,6 +73,14 @@ func (c ServiceChecker) getIamRolesUsage() (ret []AWSQuotaInfo) {
 
 func (c ServiceChecker) getIamUsersUsage() (ret []AWSQuotaInfo) {
 	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Users", "Users per Account"); err != nil {
+		return []AWSQuotaInfo{}
+	} else {
+		return []AWSQuotaInfo{quotaInfo}
+	}
+}
+
+func (c ServiceChecker) getIamGroupsUsage() (ret []AWSQuotaInfo) {
+	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Groups", "Groups per Account"); err != nil {
 		return []AWSQuotaInfo{}
 	} else {
 		return []AWSQuotaInfo{quotaInfo}
