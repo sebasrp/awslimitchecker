@@ -17,6 +17,7 @@ func NewIamChecker() Svcquota {
 		"Users per Account":             ServiceChecker.getIamUsersUsage,
 		"Groups per Account":            ServiceChecker.getIamGroupsUsage,
 		"Instance profiles per Account": ServiceChecker.getIamInstanceProfilesUsage,
+		"Policies per Account":          ServiceChecker.getIamPoliciesUsage,
 	}
 	requiredPermissions := []string{"iam:GetAccountSummary"}
 
@@ -90,6 +91,14 @@ func (c ServiceChecker) getIamGroupsUsage() (ret []AWSQuotaInfo) {
 
 func (c ServiceChecker) getIamInstanceProfilesUsage() (ret []AWSQuotaInfo) {
 	if quotaInfo, err := IamSummaryToAWSQuotaInfo("InstanceProfiles", "Instance profiles per Account"); err != nil {
+		return []AWSQuotaInfo{}
+	} else {
+		return []AWSQuotaInfo{quotaInfo}
+	}
+}
+
+func (c ServiceChecker) getIamPoliciesUsage() (ret []AWSQuotaInfo) {
+	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Policies", "Policies per Account"); err != nil {
 		return []AWSQuotaInfo{}
 	} else {
 		return []AWSQuotaInfo{quotaInfo}
