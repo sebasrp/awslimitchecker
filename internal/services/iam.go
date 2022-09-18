@@ -14,6 +14,7 @@ func NewIamChecker() Svcquota {
 	serviceCode := "iam"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Roles per Account": ServiceChecker.getIamRolesUsage,
+		"Users per Account": ServiceChecker.getIamUsersUsage,
 	}
 	requiredPermissions := []string{"iam:GetAccountSummary"}
 
@@ -62,12 +63,17 @@ func IamSummaryToAWSQuotaInfo(summaryName string, quotaName string) (ret AWSQuot
 }
 
 func (c ServiceChecker) getIamRolesUsage() (ret []AWSQuotaInfo) {
-	ret = []AWSQuotaInfo{}
-	quotaInfo, err := IamSummaryToAWSQuotaInfo("Roles", "Roles per Account")
-	if err != nil {
-		fmt.Printf("Unable to retrieve iam account summary, %v", err)
-		return
+	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Roles", "Roles per Account"); err != nil {
+		return []AWSQuotaInfo{}
+	} else {
+		return []AWSQuotaInfo{quotaInfo}
 	}
-	ret = append(ret, quotaInfo)
-	return
+}
+
+func (c ServiceChecker) getIamUsersUsage() (ret []AWSQuotaInfo) {
+	if quotaInfo, err := IamSummaryToAWSQuotaInfo("Users", "Users per Account"); err != nil {
+		return []AWSQuotaInfo{}
+	} else {
+		return []AWSQuotaInfo{quotaInfo}
+	}
 }
