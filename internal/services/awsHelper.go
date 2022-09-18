@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elasticache"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -27,6 +28,7 @@ type Config struct {
 	ElastiCache   ElastiCacheClientInterface
 	Elb           ElbClientInterface   // for classic load balancers
 	Elbv2         Elbv2ClientInterface // for ALB, NLB load balancers
+	Iam           IamClientInterface
 	Kinesis       KinesisClientInterface
 	Rds           RdsClientInterface
 	S3            S3ClientInterface
@@ -49,6 +51,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		ElastiCache:   elasticache.New(&sess),
 		Elb:           elb.New(&sess),   // for classic load balancers
 		Elbv2:         elbv2.New(&sess), // for ALB and NLB load balancers
+		Iam:           iam.New(&sess),
 		Kinesis:       kinesis.New(&sess),
 		Rds:           rds.New(&sess),
 		S3:            s3.New(&sess),

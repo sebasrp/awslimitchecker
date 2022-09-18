@@ -11,6 +11,7 @@ var SupportedAwsServices = map[string]func() services.Svcquota{
 	"eks":         services.NewEksChecker,
 	"elasticache": services.NewElastiCacheChecker,
 	"elb":         services.NewElbChecker,
+	"iam":         services.NewIamChecker,
 	"kinesis":     services.NewKinesisChecker,
 	"rds":         services.NewRdsChecker,
 	"s3":          services.NewS3Checker,
