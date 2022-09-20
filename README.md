@@ -36,19 +36,63 @@ Check the help page with `awslimitchecker --help` to see all available commands.
 `awslimitchecker` requires a set of permissions in order to retrieve usage and quota information. To list the required AWS IAM policies, use the `iam` command line argument
 
 ```shell
-awslimitchecker iam
+➜ awslimitchecker iam
+Required IAM permissions to retrieve usage/limits:
+* dynamodb:ListTables
+* eks:ListClusters
+* eks:ListNodegroups
+* elasticache:DescribeCacheClusters
+* elasticloadbalancing:DescribeLoadBalancers
+* elasticloadbalancing:DescribeAccountLimits
+* iam:GetAccountSummary
+* kinesis:DescribeLimits
+* rds:DescribeAccountAttributes
+* s3:ListAllMyBuckets
+* sns:ListTopics
+* sns:ListSubscriptions
 ```
 
 ### Run a check on a single service
 
+(note - all "usage" have been manufactured/are examples)
+
 ```shell
-awslimitchecker check s3
+➜ awslimitchecker check rds --console
+AWS profile: default | AWS region: ap-southeast-1 | service: rds
+* [rds] DB instances  100/600
+* [rds] DB clusters  100/300
+* [rds] Reserved DB instances  0/600
 ```
 
 ### Run all the available checks
 
+(note - all "actuals" have been manufactured/are examples)
+
 ```shell
-awslimitchecker check all
+➜ awslimitchecker check all
+AWS profile: default | AWS region: ap-southeast-1 | service: all
+* [rds] DB instances  100/600
+* [rds] DB clusters  100/300
+* [rds] Reserved DB instances  0/600
+* [dynamodb] Maximum number of tables  100/2500
+* [eks] Clusters  1/100
+* [eks] Managed node groups per cluster (AWS::EKS::Cluster::cluster1) 0/30
+* [eks] Managed node groups per cluster (AWS::EKS::Cluster::cluster2) 0/30
+* [elasticache] Nodes per Region  10/300
+* [s3] Buckets  20/100
+* [sns] Topics per Account  300/100000
+* [sns] Pending Subscriptions per Account  300/5000
+* [elasticloadbalancing] Classic Load Balancers per Region  12/100
+* [elasticloadbalancing] Application Load Balancers per Region  12/100
+* [elasticloadbalancing] Network Load Balancers per Region  12/50
+* [iam] Instance profiles per Account  100/1000
+* [iam] Policies per Account  1000/3000
+* [iam] Server Certificates per Account  10/25
+* [iam] Roles per Account  1000/5000
+* [iam] Users per Account  100/5000
+* [iam] Groups per Account  100/300
+* [kinesis] On-demand Data Streams per account  10/50
+* [kinesis] Shards per Region  10/200
 ```
 
 ### Export data to csv
