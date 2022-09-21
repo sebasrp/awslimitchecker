@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/servicequotas"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -93,22 +94,14 @@ func TestServiceCheckerGetRequiredPermissions(t *testing.T) {
 }
 
 func TestSvcQuotaToQuotaInfo(t *testing.T) {
-	svcQuotaServiceCode := "testService"
-	svqQuotaServiceName := "my verbose testService name"
-	svcQuotaQuotaName := "quotaName"
-	svcQuotaQuotaCode := "quotaCode"
-	svqQuotaQuotaValue := float64(10)
-	svcQuotaUnit := "myUnit"
-	svcQuotaGlobal := true
-
 	svcQuota := servicequotas.ServiceQuota{
-		ServiceCode: &svcQuotaServiceCode,
-		ServiceName: &svqQuotaServiceName,
-		QuotaName:   &svcQuotaQuotaName,
-		QuotaCode:   &svcQuotaQuotaCode,
-		Value:       &svqQuotaQuotaValue,
-		Unit:        &svcQuotaUnit,
-		GlobalQuota: &svcQuotaGlobal,
+		ServiceCode: aws.String("testService"),
+		ServiceName: aws.String("my verbose testService name"),
+		QuotaName:   aws.String("quotaName"),
+		QuotaCode:   aws.String("quotaCode"),
+		Value:       aws.Float64(float64(10)),
+		Unit:        aws.String("myUnit"),
+		GlobalQuota: aws.Bool(true),
 	}
 
 	expected := AWSQuotaInfo{
