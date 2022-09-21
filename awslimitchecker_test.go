@@ -135,7 +135,7 @@ func TestGetLimitsAll(t *testing.T) {
 	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
 		return &services.Config{}, nil
 	}
-	assert.Equal(t, 2, len(awslimitchecker.GetLimits("all", "testProfile", "testRegion")))
+	assert.Equal(t, 2, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion")))
 }
 
 func TestGetLimitsSingle(t *testing.T) {
@@ -146,7 +146,7 @@ func TestGetLimitsSingle(t *testing.T) {
 	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
 		return &services.Config{}, nil
 	}
-	assert.Equal(t, 1, len(awslimitchecker.GetLimits("foo", "testProfile", "testRegion")))
+	assert.Equal(t, 1, len(awslimitchecker.GetUsage("foo", "testProfile", "testRegion")))
 }
 
 func TestGetLimitsSingleWrong(t *testing.T) {
@@ -157,7 +157,7 @@ func TestGetLimitsSingleWrong(t *testing.T) {
 	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
 		return &services.Config{}, nil
 	}
-	assert.Equal(t, 0, len(awslimitchecker.GetLimits("boz", "testProfile", "testRegion")))
+	assert.Equal(t, 0, len(awslimitchecker.GetUsage("boz", "testProfile", "testRegion")))
 }
 func TestGetLimitsErrorInit(t *testing.T) {
 	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
@@ -167,5 +167,5 @@ func TestGetLimitsErrorInit(t *testing.T) {
 	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
 		return &services.Config{}, errors.New("test error")
 	}
-	assert.Equal(t, 0, len(awslimitchecker.GetLimits("all", "testProfile", "testRegion")))
+	assert.Equal(t, 0, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion")))
 }

@@ -43,7 +43,7 @@ var check = &cobra.Command{
 			fmt.Printf("Unable to retrieve region. Please provide a valid region")
 		}
 
-		usage := awslimitchecker.GetLimits(awsService, awsProfile, region)
+		usage := awslimitchecker.GetUsage(awsService, awsProfile, region)
 
 		if console {
 			fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsProfile, region, awsService)

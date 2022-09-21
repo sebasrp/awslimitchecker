@@ -18,7 +18,7 @@ var SupportedAwsServices = map[string]func() services.Svcquota{
 	"sns":         services.NewSnsChecker,
 }
 
-func GetLimits(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
+func GetUsage(awsService string, awsprofile string, region string) (ret []services.AWSQuotaInfo) {
 	_, err := services.InitializeConfig(awsprofile, region)
 	if err != nil {
 		fmt.Printf("Unable to create AWS session, %v", err)
