@@ -12,6 +12,12 @@ type AWSQuotaInfo struct {
 	Global     bool    // whether the quota is global or not
 }
 
+type AWSQuotaOverride struct {
+	Service    string  // service the quota applies to
+	QuotaName  string  // the name of the quota
+	QuotaValue float64 // the quota value
+}
+
 type Svcquota interface {
 	// Get Usage retrieve the quotas and usage for the given service
 	GetUsage() []AWSQuotaInfo
@@ -25,7 +31,7 @@ type Svcquota interface {
 	GetAllDefaultQuotas() map[string]AWSQuotaInfo
 
 	// Overrides the given quota for the service with a new value
-	SetQuotaOverride(serviceName string, quotaName string, value float64)
+	SetQuotaOverride(quotaOverride AWSQuotaOverride)
 
 	// GetRequiredPermissions returns a list of the IAM permissions required
 	// to retrieve the usage for this service.
