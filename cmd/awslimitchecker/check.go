@@ -53,7 +53,7 @@ var check = &cobra.Command{
 					resourceIdString = fmt.Sprintf("(%s)", u.ResourceId)
 				}
 				fmt.Printf("* [%s] %s %s %g/%g\n",
-					u.Service, u.Name, resourceIdString, u.UsageValue, u.QuotaValue)
+					u.Service, u.QuotaName, resourceIdString, u.UsageValue, u.QuotaValue)
 			}
 		}
 
@@ -66,7 +66,7 @@ var check = &cobra.Command{
 
 			_ = csvwriter.Write([]string{"region", "Service", "Name", "usage", "quota"})
 			for _, u := range usage {
-				row := []string{region, u.Service, u.Name, strconv.FormatFloat(u.UsageValue, 'f', 2, 64), strconv.FormatFloat(u.QuotaValue, 'f', 2, 64)}
+				row := []string{region, u.Service, u.QuotaName, strconv.FormatFloat(u.UsageValue, 'f', 2, 64), strconv.FormatFloat(u.QuotaValue, 'f', 2, 64)}
 				_ = csvwriter.Write(row)
 			}
 

@@ -121,7 +121,7 @@ func (c ServiceChecker) getServiceDefaultQuotas() (ret map[string]AWSQuotaInfo) 
 func svcQuotaToQuotaInfo(i *servicequotas.ServiceQuota) (ret AWSQuotaInfo) {
 	ret = AWSQuotaInfo{
 		Service:    aws.StringValue(i.ServiceCode),
-		Name:       aws.StringValue(i.QuotaName),
+		QuotaName:  aws.StringValue(i.QuotaName),
 		Quotacode:  aws.StringValue(i.QuotaCode),
 		QuotaValue: aws.Float64Value(i.Value),
 		UsageValue: 0.0,

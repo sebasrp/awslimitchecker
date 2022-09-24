@@ -53,9 +53,9 @@ func IamSummaryToAWSQuotaInfo(summaryName string, quotaName string) (ret AWSQuot
 	}
 
 	ret = AWSQuotaInfo{
-		Service: "iam",
-		Name:    quotaName,
-		Global:  true,
+		Service:   "iam",
+		QuotaName: quotaName,
+		Global:    true,
 	}
 	if val, ok := quotas[summaryName+"Quota"]; ok {
 		ret.QuotaValue = float64(*val)

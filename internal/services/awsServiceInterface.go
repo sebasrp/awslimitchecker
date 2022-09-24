@@ -2,9 +2,9 @@ package services
 
 type AWSQuotaInfo struct {
 	Service    string  // service the quota applies to
-	Name       string  // the name of the aws service resource the usage is for
-	ResourceId string  // if there can be multiple usages for one quota, aws id (Cloudformation format)
 	Region     string  // the region this quota applies to
+	ResourceId string  // if there can be multiple usages for one quota, aws id (Cloudformation format)
+	QuotaName  string  // the name of the quota
 	Quotacode  string  // servicequota code
 	QuotaValue float64 // the quota value
 	UsageValue float64 // the usage value

@@ -49,7 +49,7 @@ func (c TestChecker) GetUsage() (ret []services.AWSQuotaInfo) {
 func (c TestChecker) GetTestUsage() (ret services.AWSQuotaInfo) {
 	ret = services.AWSQuotaInfo{
 		Service:    "testService",
-		Name:       "testQuota",
+		QuotaName:  "testQuota",
 		Region:     "testRegion",
 		Quotacode:  "test-quota",
 		QuotaValue: 100,
@@ -63,7 +63,7 @@ func (c TestChecker) GetTestUsage() (ret services.AWSQuotaInfo) {
 func (c TestChecker) GetAllAppliedQuotas() map[string]services.AWSQuotaInfo {
 	c.appliedQuotas["testQuota"] = services.AWSQuotaInfo{
 		Service:    "testService",
-		Name:       "testQuota",
+		QuotaName:  "testQuota",
 		Region:     "testRegion",
 		Quotacode:  "test-quota",
 		QuotaValue: 200,
@@ -77,7 +77,7 @@ func (c TestChecker) GetAllAppliedQuotas() map[string]services.AWSQuotaInfo {
 func (c TestChecker) GetAllDefaultQuotas() map[string]services.AWSQuotaInfo {
 	c.defaultQuotas["testQuota"] = services.AWSQuotaInfo{
 		Service:    "testService",
-		Name:       "testQuota",
+		QuotaName:  "testQuota",
 		Region:     "testRegion",
 		Quotacode:  "test-quota",
 		QuotaValue: 100,

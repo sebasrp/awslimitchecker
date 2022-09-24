@@ -106,7 +106,7 @@ func TestSvcQuotaToQuotaInfo(t *testing.T) {
 
 	expected := AWSQuotaInfo{
 		Service:    "testService",
-		Name:       "quotaName",
+		QuotaName:  "quotaName",
 		Quotacode:  "quotaCode",
 		QuotaValue: float64(10),
 		UsageValue: 0.0,

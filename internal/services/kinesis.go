@@ -41,7 +41,7 @@ func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret []AWSQuotaInfo
 	result, err := conf.Kinesis.DescribeLimits(nil)
 	quotaInfo := AWSQuotaInfo{
 		Service:   c.ServiceCode,
-		Name:      "On-demand Data Streams per account",
+		QuotaName: "On-demand Data Streams per account",
 		Region:    c.Region,
 		Quotacode: "",
 		Unit:      "",
@@ -57,7 +57,7 @@ func (c ServiceChecker) getKinesisOnDemandStreamCountUsage() (ret []AWSQuotaInfo
 	quotaInfo.QuotaValue = float64(*result.OnDemandStreamCountLimit)
 	quotaInfo.UsageValue = float64(*result.OnDemandStreamCount)
 
-	c.GetAllAppliedQuotas()[quotaInfo.Name] = quotaInfo
+	c.GetAllAppliedQuotas()[quotaInfo.QuotaName] = quotaInfo
 	ret = append(ret, quotaInfo)
 	return
 }
