@@ -62,6 +62,11 @@ func TestGetAllAppliedQuotasFallback(t *testing.T) {
 	assert.Equal(t, 2, len(appliedQuotas))
 	assert.Contains(t, appliedQuotas, "testQuotaName1")
 	assert.Contains(t, appliedQuotas, "testQuotaName2")
+	svcChecker := testChecker.(*ServiceChecker)
+	appliedQuotasInternal := svcChecker.AppliedQuotas
+	assert.Equal(t, 2, len(appliedQuotasInternal))
+	assert.Contains(t, appliedQuotasInternal, "testQuotaName1")
+	assert.Contains(t, appliedQuotasInternal, "testQuotaName2")
 }
 
 func TestGetAllAppliedQuotasError(t *testing.T) {
@@ -78,6 +83,11 @@ func TestGetAllDefaultQuotas(t *testing.T) {
 		nil)
 	testChecker := NewTestChecker(nil)
 	assert.Equal(t, 1, len(testChecker.GetAllDefaultQuotas()))
+
+	svcChecker := testChecker.(*ServiceChecker)
+	defaultQuoteasInternal := svcChecker.DefaultQuotas
+	assert.Equal(t, 1, len(defaultQuoteasInternal))
+
 }
 
 func TestGetAllDefaultQuotasError(t *testing.T) {
@@ -118,30 +128,52 @@ func TestSvcQuotaToQuotaInfo(t *testing.T) {
 
 func TestSetQuotaOverride(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		[]*servicequotas.ServiceQuota{
+			NewQuota("testService", "testQuotaName", float64(100), false),
+			NewQuota("testService", "testQuotaName2", float64(200), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaName", QuotaValue: float64(200)}})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaName", QuotaValue: float64(500)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
-	assert.Equal(t, float64(200), appliedQuotas["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(500), appliedQuotas["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotas["testQuotaName2"].QuotaValue)
+	svcChecker := testChecker.(*ServiceChecker)
+	appliedQuotasInternal := svcChecker.AppliedQuotas
+	assert.Equal(t, float64(500), appliedQuotasInternal["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotasInternal["testQuotaName2"].QuotaValue)
 }
 
 func TestSetQuotaOverrideWrongService(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		[]*servicequotas.ServiceQuota{
+			NewQuota("testService", "testQuotaName", float64(100), false),
+			NewQuota("testService", "testQuotaName2", float64(200), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testServiceWrong", QuotaName: "testQuotaName", QuotaValue: float64(200)}})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testServiceWrong", QuotaName: "testQuotaName", QuotaValue: float64(500)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
 	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotas["testQuotaName2"].QuotaValue)
+	svcChecker := testChecker.(*ServiceChecker)
+	appliedQuotasInternal := svcChecker.AppliedQuotas
+	assert.Equal(t, float64(100), appliedQuotasInternal["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotasInternal["testQuotaName2"].QuotaValue)
 }
 
 func TestSetQuotaOverrideWrongQuotaName(t *testing.T) {
 	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
-		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		[]*servicequotas.ServiceQuota{
+			NewQuota("testService", "testQuotaName", float64(100), false),
+			NewQuota("testService", "testQuotaName2", float64(200), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaNameWrong", QuotaValue: float64(200)}})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaNameWrong", QuotaValue: float64(500)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
 	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotas["testQuotaName2"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotas["testQuotaName2"].QuotaValue)
+	svcChecker := testChecker.(*ServiceChecker)
+	appliedQuotasInternal := svcChecker.AppliedQuotas
+	assert.Equal(t, float64(100), appliedQuotasInternal["testQuotaName"].QuotaValue)
+	assert.Equal(t, float64(200), appliedQuotasInternal["testQuotaName2"].QuotaValue)
 }

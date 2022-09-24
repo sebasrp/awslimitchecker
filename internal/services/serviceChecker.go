@@ -55,14 +55,17 @@ func (c ServiceChecker) GetUsage() (ret []AWSQuotaInfo) {
 
 func (c ServiceChecker) GetAllAppliedQuotas() map[string]AWSQuotaInfo {
 	if len(c.AppliedQuotas) == 0 {
-		c.AppliedQuotas = c.getServiceAppliedQuotas()
+		temp := c.getServiceAppliedQuotas()
 		// sometimes applied quotas does not include all default quotas, so we need
 		// to make a union between applied and default - taking applied as source
 		// of truth
 		for name, quota := range c.GetAllDefaultQuotas() {
-			if _, ok := c.AppliedQuotas[name]; !ok {
-				c.AppliedQuotas[name] = quota
+			if _, ok := temp[name]; !ok {
+				temp[name] = quota
 			}
+		}
+		for key, value := range temp {
+			c.AppliedQuotas[key] = value
 		}
 	}
 
@@ -92,7 +95,10 @@ func (c ServiceChecker) getServiceAppliedQuotas() (ret map[string]AWSQuotaInfo) 
 
 func (c ServiceChecker) GetAllDefaultQuotas() map[string]AWSQuotaInfo {
 	if len(c.DefaultQuotas) == 0 {
-		c.DefaultQuotas = c.getServiceDefaultQuotas()
+		temp := c.getServiceDefaultQuotas()
+		for key, value := range temp {
+			c.DefaultQuotas[key] = value
+		}
 	}
 	return c.DefaultQuotas
 }
@@ -141,7 +147,6 @@ func (c ServiceChecker) SetQuotasOverride(quotasOverride []AWSQuotaOverride) {
 			c.AppliedQuotas[override.QuotaName] = quota
 		}
 	}
-
 }
 
 func (c ServiceChecker) GetRequiredPermissions() []string {
