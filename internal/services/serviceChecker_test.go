@@ -115,3 +115,33 @@ func TestSvcQuotaToQuotaInfo(t *testing.T) {
 	}
 	assert.Equal(t, expected, svcQuotaToQuotaInfo(&svcQuota))
 }
+
+func TestSetQuotaOverride(t *testing.T) {
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(nil)
+	testChecker.SetQuotaOverride("testService", "testQuotaName", float64(200))
+	appliedQuotas := testChecker.GetAllAppliedQuotas()
+	assert.Equal(t, float64(200), appliedQuotas["testQuotaName"].QuotaValue)
+}
+
+func TestSetQuotaOverrideWrongService(t *testing.T) {
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(nil)
+	testChecker.SetQuotaOverride("testServiceWrong", "testQuotaName", float64(200))
+	appliedQuotas := testChecker.GetAllAppliedQuotas()
+	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
+}
+
+func TestSetQuotaOverrideWrongQuotaName(t *testing.T) {
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
+		nil)
+	testChecker := NewTestChecker(nil)
+	testChecker.SetQuotaOverride("testService", "testQuotaNameWrong", float64(200))
+	appliedQuotas := testChecker.GetAllAppliedQuotas()
+	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
+}

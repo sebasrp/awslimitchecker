@@ -24,6 +24,9 @@ type Svcquota interface {
 	// service. Usage of those resources are not retrieved/calculated
 	GetAllDefaultQuotas() map[string]AWSQuotaInfo
 
+	// Overrides the given quota for the service with a new value
+	SetQuotaOverride(serviceName string, quotaName string, value float64)
+
 	// GetRequiredPermissions returns a list of the IAM permissions required
 	// to retrieve the usage for this service.
 	GetRequiredPermissions() []string

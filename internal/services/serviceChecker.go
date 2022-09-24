@@ -131,6 +131,16 @@ func svcQuotaToQuotaInfo(i *servicequotas.ServiceQuota) (ret AWSQuotaInfo) {
 	return
 }
 
+func (c ServiceChecker) SetQuotaOverride(serviceName string, quotaName string, value float64) {
+	if c.ServiceCode != serviceName {
+		return
+	}
+	if quota, ok := c.GetAllAppliedQuotas()[quotaName]; ok {
+		quota.QuotaValue = value
+		c.AppliedQuotas[quotaName] = quota
+	}
+}
+
 func (c ServiceChecker) GetRequiredPermissions() []string {
 	return c.RequiredPermissions
 }
