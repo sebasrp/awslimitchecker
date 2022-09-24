@@ -121,7 +121,7 @@ func TestSetQuotaOverride(t *testing.T) {
 		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotaOverride(AWSQuotaOverride{Service: "testService", QuotaName: "testQuotaName", QuotaValue: float64(200)})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaName", QuotaValue: float64(200)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
 	assert.Equal(t, float64(200), appliedQuotas["testQuotaName"].QuotaValue)
 }
@@ -131,7 +131,7 @@ func TestSetQuotaOverrideWrongService(t *testing.T) {
 		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotaOverride(AWSQuotaOverride{Service: "testServiceWrong", QuotaName: "testQuotaName", QuotaValue: float64(200)})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testServiceWrong", QuotaName: "testQuotaName", QuotaValue: float64(200)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
 	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
 }
@@ -141,7 +141,7 @@ func TestSetQuotaOverrideWrongQuotaName(t *testing.T) {
 		[]*servicequotas.ServiceQuota{NewQuota("testService", "testQuotaName", float64(100), false)},
 		nil)
 	testChecker := NewTestChecker(nil)
-	testChecker.SetQuotaOverride(AWSQuotaOverride{Service: "testService", QuotaName: "testQuotaNameWrong", QuotaValue: float64(200)})
+	testChecker.SetQuotasOverride([]AWSQuotaOverride{{Service: "testService", QuotaName: "testQuotaNameWrong", QuotaValue: float64(200)}})
 	appliedQuotas := testChecker.GetAllAppliedQuotas()
 	assert.Equal(t, float64(100), appliedQuotas["testQuotaName"].QuotaValue)
 }
