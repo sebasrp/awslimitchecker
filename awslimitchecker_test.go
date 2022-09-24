@@ -88,13 +88,15 @@ func (c TestChecker) GetAllDefaultQuotas() map[string]services.AWSQuotaInfo {
 	return c.defaultQuotas
 }
 
-func (c TestChecker) SetQuotaOverride(quotaOverride services.AWSQuotaOverride) {
-	if c.serviceCode != quotaOverride.Service {
-		return
-	}
-	if quota, ok := c.GetAllAppliedQuotas()[quotaOverride.QuotaName]; !ok {
-		quota.QuotaValue = quotaOverride.QuotaValue
-		c.appliedQuotas[quotaOverride.QuotaName] = quota
+func (c TestChecker) SetQuotasOverride(quotasOverride []services.AWSQuotaOverride) {
+	for _, override := range quotasOverride {
+		if c.serviceCode != override.Service {
+			return
+		}
+		if quota, ok := c.GetAllAppliedQuotas()[override.QuotaName]; ok {
+			quota.QuotaValue = override.QuotaValue
+			c.appliedQuotas[override.QuotaName] = quota
+		}
 	}
 }
 
