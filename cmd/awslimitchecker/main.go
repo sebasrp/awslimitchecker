@@ -10,12 +10,13 @@ import (
 
 var (
 	// Used for flags.
-	cfgFile    string
-	region     string
-	awsprofile string
-	console    bool
-	csvFlag    bool
-	verbose    bool
+	cfgFile       string
+	region        string
+	awsprofile    string
+	overridesJson string
+	console       bool
+	csvFlag       bool
+	verbose       bool
 
 	rootCmd = &cobra.Command{
 		Use:   "awslimitchecker",
@@ -46,6 +47,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.awslimitchecker.yaml)")
 	rootCmd.PersistentFlags().StringVar(&awsprofile, "awsprofile", "", "aws profile to use (default `default`)")
 	rootCmd.PersistentFlags().StringVar(&region, "region", "", "region to evaluate (default `us-east-1`)")
+	rootCmd.PersistentFlags().StringVar(&overridesJson, "quota-override-json", "", "json defining the quota overrides")
 	rootCmd.PersistentFlags().BoolVar(&console, "console", false, "output results to console")
 	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "output results to a csv file")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enables verbose output")
@@ -57,6 +59,10 @@ func init() {
 	err = viper.BindPFlag("region", rootCmd.PersistentFlags().Lookup("region"))
 	if err != nil {
 		fmt.Printf("error binding 'region' flag. %v", err)
+	}
+	err = viper.BindPFlag("overridesJson", rootCmd.PersistentFlags().Lookup("quota-override-json"))
+	if err != nil {
+		fmt.Printf("error binding 'overridesJson' flag. %v", err)
 	}
 	err = viper.BindPFlag("console", rootCmd.PersistentFlags().Lookup("console"))
 	if err != nil {

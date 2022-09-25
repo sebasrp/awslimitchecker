@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/sebasrp/awslimitchecker"
+	"github.com/sebasrp/awslimitchecker/internal/services"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -32,6 +34,7 @@ var check = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		awsService := args[0]
 		awsProfile := viper.GetString("awsprofile")
+		overridesJson := viper.GetString("overridesJson")
 		region := viper.GetString("region")
 		console := viper.GetBool("console")
 		csvFlag := viper.GetBool("csv")
@@ -43,7 +46,26 @@ var check = &cobra.Command{
 			fmt.Printf("Unable to retrieve region. Please provide a valid region")
 		}
 
-		usage := awslimitchecker.GetUsage(awsService, awsProfile, region)
+		quotaOverrides := []services.AWSQuotaOverride{}
+		if overridesJson != "" {
+			var payload map[string]map[string]float64
+			content, err := os.ReadFile(overridesJson)
+			if err != nil {
+				fmt.Printf("Error when opening file: %v", err)
+			}
+			err = json.Unmarshal(content, &payload)
+			if err == nil {
+				for svcName, svc := range payload {
+					for quotaName, quota := range svc {
+						quotaOverrides = append(quotaOverrides, services.AWSQuotaOverride{Service: svcName, QuotaName: quotaName, QuotaValue: quota})
+					}
+				}
+			} else {
+				fmt.Printf("Error reading override json file (%v): %v\n", overridesJson, err)
+			}
+		}
+
+		usage := awslimitchecker.GetUsage(awsService, awsProfile, region, quotaOverrides)
 
 		if console {
 			fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsProfile, region, awsService)
@@ -74,6 +96,5 @@ var check = &cobra.Command{
 
 			csvfile.Close()
 		}
-
 	},
 }
