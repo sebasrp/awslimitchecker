@@ -20,6 +20,7 @@ Not many services are currently supported, but it's fairly simple to add them - 
 * Compare current usage to limits
 * When available, retrieves applied (different than default) values
 * Supports explicitely setting the AWS region
+* Supports Overriding default/applied limits (for accounts that have increased limits through customer support for example)
 
 ## cli
 
@@ -95,6 +96,31 @@ AWS profile: default | AWS region: ap-southeast-1 | service: all
 * [kinesis] Shards per Region  10/200
 ```
 
+### Override Limits
+
+`awslimitchecker` allows you to override the applied or default quotas. To do so, you can specify the path to the json file in the CLI, or provide the slice in the module as well.
+
+The format of the json file needs to be as follows:
+
+```json
+{
+    "kinesis": {
+        "Shards per Region": 123,
+        "On-demand Data Streams per account": 456
+    },
+    ...
+    "serviceName": {
+        "quota name": 1234.00 // override value
+    }
+}
+```
+
+Then, you can use the cli as follow:
+
+```shell
+awslimitchecker check all --quota-override-json <path to your file>
+```
+
 ### Export data to csv
 
 ```shell
@@ -108,6 +134,7 @@ Tired of manually selecting the different parameters? You can save those in a fi
 ```yaml
 awsprofile: <name of profile>
 region: <region to evaluate>
+overridesJson: <path of the json containing the overrides to apply>
 console: true /false
 csv: true / false
 verbose: true / false
