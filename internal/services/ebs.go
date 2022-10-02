@@ -10,15 +10,16 @@ import (
 func NewEbsChecker() Svcquota {
 	serviceCode := "ebs"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
-		"Snapshots per Region":                                   ServiceChecker.getEbsSnapshotsUsage,
-		"IOPS for Provisioned IOPS SSD (io1) volumes":            ServiceChecker.getEbsIo1IopsUsage,
-		"Storage for Provisioned IOPS SSD (io1) volumes, in TiB": ServiceChecker.getEbsIo1SizeUsage,
-		"IOPS for Provisioned IOPS SSD (io2) volumes":            ServiceChecker.getEbsIo2IopsUsage,
-		"Storage for Provisioned IOPS SSD (io2) volumes, in TiB": ServiceChecker.getEbsIo2SizeUsage,
-		"Storage for Cold HDD (sc1) volumes, in TiB":             ServiceChecker.getEbsSc1SizeUsage,
-		"Storage for General Purpose SSD (gp2) volumes, in TiB":  ServiceChecker.getEbsGp2SizeUsage,
-		"Storage for General Purpose SSD (gp3) volumes, in TiB":  ServiceChecker.getEbsGp3SizeUsage,
-		"Storage for Magnetic (standard) volumes, in TiB":        ServiceChecker.getEbsStandardSizeUsage,
+		"Snapshots per Region":                                       ServiceChecker.getEbsSnapshotsUsage,
+		"IOPS for Provisioned IOPS SSD (io1) volumes":                ServiceChecker.getEbsIo1IopsUsage,
+		"Storage for Provisioned IOPS SSD (io1) volumes, in TiB":     ServiceChecker.getEbsIo1SizeUsage,
+		"IOPS for Provisioned IOPS SSD (io2) volumes":                ServiceChecker.getEbsIo2IopsUsage,
+		"Storage for Provisioned IOPS SSD (io2) volumes, in TiB":     ServiceChecker.getEbsIo2SizeUsage,
+		"Storage for Cold HDD (sc1) volumes, in TiB":                 ServiceChecker.getEbsSc1SizeUsage,
+		"Storage for General Purpose SSD (gp2) volumes, in TiB":      ServiceChecker.getEbsGp2SizeUsage,
+		"Storage for General Purpose SSD (gp3) volumes, in TiB":      ServiceChecker.getEbsGp3SizeUsage,
+		"Storage for Magnetic (standard) volumes, in TiB":            ServiceChecker.getEbsStandardSizeUsage,
+		"Storage for Throughput Optimized HDD (st1) volumes, in TiB": ServiceChecker.getEbsSt1SizeUsage,
 	}
 	requiredPermissions := []string{"ec2:DescribeSnapshots", "ec2:DescribeVolumes"}
 
@@ -158,6 +159,21 @@ func (c ServiceChecker) getEbsStandardSizeUsage() (ret []AWSQuotaInfo) {
 		return
 	}
 	quotaInfo := c.GetAllAppliedQuotas()["Storage for Magnetic (standard) volumes, in TiB"]
+	quotaInfo.UsageValue = GiBtoTiB(float64(size))
+
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getEbsSt1SizeUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+
+	_, size, err := getEbsVolumeDetails("st1")
+	if err != nil {
+		fmt.Printf("failed to retrieve ec2 ebs st1 volumes, %v", err)
+		return
+	}
+	quotaInfo := c.GetAllAppliedQuotas()["Storage for Throughput Optimized HDD (st1) volumes, in TiB"]
 	quotaInfo.UsageValue = GiBtoTiB(float64(size))
 
 	ret = append(ret, quotaInfo)
