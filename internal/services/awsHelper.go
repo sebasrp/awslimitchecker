@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/elasticache"
@@ -23,6 +24,7 @@ var conf *Config = &Config{}
 
 type Config struct {
 	Session       *session.Session
+	Autoscaling   AutoscalingClientInterface
 	DynamoDb      DynamodbClientInterface
 	Eks           EksClientInterface
 	ElastiCache   ElastiCacheClientInterface
@@ -46,6 +48,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 
 	conf = &Config{
 		Session:       &sess,
+		Autoscaling:   autoscaling.New(&sess),
 		DynamoDb:      dynamodb.New(&sess),
 		Eks:           eks.New(&sess),
 		ElastiCache:   elasticache.New(&sess),

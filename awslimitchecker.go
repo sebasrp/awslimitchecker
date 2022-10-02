@@ -7,6 +7,7 @@ import (
 )
 
 var SupportedAwsServices = map[string]func() services.Svcquota{
+	"autoscaling": services.NewAutoscalingChecker,
 	"dynamodb":    services.NewDynamoDbChecker,
 	"eks":         services.NewEksChecker,
 	"elasticache": services.NewElastiCacheChecker,
