@@ -7,17 +7,18 @@ import (
 )
 
 var SupportedAwsServices = map[string]func() services.Svcquota{
-	"acm":         services.NewAcmChecker,
-	"autoscaling": services.NewAutoscalingChecker,
-	"dynamodb":    services.NewDynamoDbChecker,
-	"eks":         services.NewEksChecker,
-	"elasticache": services.NewElastiCacheChecker,
-	"elb":         services.NewElbChecker,
-	"iam":         services.NewIamChecker,
-	"kinesis":     services.NewKinesisChecker,
-	"rds":         services.NewRdsChecker,
-	"s3":          services.NewS3Checker,
-	"sns":         services.NewSnsChecker,
+	"acm":            services.NewAcmChecker,
+	"autoscaling":    services.NewAutoscalingChecker,
+	"cloudformation": services.NewCloudformationChecker,
+	"dynamodb":       services.NewDynamoDbChecker,
+	"eks":            services.NewEksChecker,
+	"elasticache":    services.NewElastiCacheChecker,
+	"elb":            services.NewElbChecker,
+	"iam":            services.NewIamChecker,
+	"kinesis":        services.NewKinesisChecker,
+	"rds":            services.NewRdsChecker,
+	"s3":             services.NewS3Checker,
+	"sns":            services.NewSnsChecker,
 }
 
 func GetUsage(awsService string, awsprofile string, region string, overrides []services.AWSQuotaOverride) (ret []services.AWSQuotaInfo) {

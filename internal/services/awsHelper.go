@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/elasticache"
@@ -24,20 +25,21 @@ import (
 var conf *Config = &Config{}
 
 type Config struct {
-	Session       *session.Session
-	Acm           AcmClientInterface
-	Autoscaling   AutoscalingClientInterface
-	DynamoDb      DynamodbClientInterface
-	Eks           EksClientInterface
-	ElastiCache   ElastiCacheClientInterface
-	Elb           ElbClientInterface   // for classic load balancers
-	Elbv2         Elbv2ClientInterface // for ALB, NLB load balancers
-	Iam           IamClientInterface
-	Kinesis       KinesisClientInterface
-	Rds           RdsClientInterface
-	S3            S3ClientInterface
-	ServiceQuotas SvcQuotaClientInterface
-	Sns           SnsClientInterface
+	Session        *session.Session
+	Acm            AcmClientInterface
+	Autoscaling    AutoscalingClientInterface
+	Cloudformation CloudformationClientInterface
+	DynamoDb       DynamodbClientInterface
+	Eks            EksClientInterface
+	ElastiCache    ElastiCacheClientInterface
+	Elb            ElbClientInterface   // for classic load balancers
+	Elbv2          Elbv2ClientInterface // for ALB, NLB load balancers
+	Iam            IamClientInterface
+	Kinesis        KinesisClientInterface
+	Rds            RdsClientInterface
+	S3             S3ClientInterface
+	ServiceQuotas  SvcQuotaClientInterface
+	Sns            SnsClientInterface
 }
 
 var InitializeConfig = initializeConfig
@@ -49,20 +51,21 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 	}
 
 	conf = &Config{
-		Session:       &sess,
-		Acm:           acm.New(&sess),
-		Autoscaling:   autoscaling.New(&sess),
-		DynamoDb:      dynamodb.New(&sess),
-		Eks:           eks.New(&sess),
-		ElastiCache:   elasticache.New(&sess),
-		Elb:           elb.New(&sess),   // for classic load balancers
-		Elbv2:         elbv2.New(&sess), // for ALB and NLB load balancers
-		Iam:           iam.New(&sess),
-		Kinesis:       kinesis.New(&sess),
-		Rds:           rds.New(&sess),
-		S3:            s3.New(&sess),
-		ServiceQuotas: servicequotas.New(&sess),
-		Sns:           sns.New(&sess),
+		Session:        &sess,
+		Acm:            acm.New(&sess),
+		Autoscaling:    autoscaling.New(&sess),
+		Cloudformation: cloudformation.New(&sess),
+		DynamoDb:       dynamodb.New(&sess),
+		Eks:            eks.New(&sess),
+		ElastiCache:    elasticache.New(&sess),
+		Elb:            elb.New(&sess),   // for classic load balancers
+		Elbv2:          elbv2.New(&sess), // for ALB and NLB load balancers
+		Iam:            iam.New(&sess),
+		Kinesis:        kinesis.New(&sess),
+		Rds:            rds.New(&sess),
+		S3:             s3.New(&sess),
+		ServiceQuotas:  servicequotas.New(&sess),
+		Sns:            sns.New(&sess),
 	}
 
 	return conf, nil
