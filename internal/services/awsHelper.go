@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/eks"
@@ -24,6 +25,7 @@ var conf *Config = &Config{}
 
 type Config struct {
 	Session       *session.Session
+	Acm           AcmClientInterface
 	Autoscaling   AutoscalingClientInterface
 	DynamoDb      DynamodbClientInterface
 	Eks           EksClientInterface
@@ -48,6 +50,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 
 	conf = &Config{
 		Session:       &sess,
+		Acm:           acm.New(&sess),
 		Autoscaling:   autoscaling.New(&sess),
 		DynamoDb:      dynamodb.New(&sess),
 		Eks:           eks.New(&sess),
