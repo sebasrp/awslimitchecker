@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/sebasrp/awslimitchecker"
@@ -66,6 +67,9 @@ var check = &cobra.Command{
 		}
 
 		usage := awslimitchecker.GetUsage(awsService, awsProfile, region, quotaOverrides)
+		sort.Slice(usage[:], func(i, j int) bool {
+			return usage[i].Service+usage[i].QuotaName < usage[j].Service+usage[j].QuotaName
+		})
 
 		if console {
 			fmt.Printf("AWS profile: %s | AWS region: %s | service: %s\n", awsProfile, region, awsService)
