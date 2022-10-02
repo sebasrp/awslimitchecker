@@ -13,6 +13,8 @@ func NewEbsChecker() Svcquota {
 		"Snapshots per Region":                                   ServiceChecker.getEbsSnapshotsUsage,
 		"IOPS for Provisioned IOPS SSD (io1) volumes":            ServiceChecker.getEbsIo1IopsUsage,
 		"Storage for Provisioned IOPS SSD (io1) volumes, in TiB": ServiceChecker.getEbsIo1SizeUsage,
+		"IOPS for Provisioned IOPS SSD (io2) volumes":            ServiceChecker.getEbsIo2IopsUsage,
+		"Storage for Provisioned IOPS SSD (io2) volumes, in TiB": ServiceChecker.getEbsIo2SizeUsage,
 	}
 	requiredPermissions := []string{"ec2:DescribeSnapshots", "ec2:DescribeVolumes"}
 
@@ -62,6 +64,36 @@ func (c ServiceChecker) getEbsIo1SizeUsage() (ret []AWSQuotaInfo) {
 		return
 	}
 	quotaInfo := c.GetAllAppliedQuotas()["Storage for Provisioned IOPS SSD (io1) volumes, in TiB"]
+	quotaInfo.UsageValue = GiBtoTiB(float64(size))
+
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getEbsIo2IopsUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+
+	iops, _, err := getEbsVolumeDetails("io2")
+	if err != nil {
+		fmt.Printf("failed to retrieve ec2 ebs io2 volumes, %v", err)
+		return
+	}
+	quotaInfo := c.GetAllAppliedQuotas()["IOPS for Provisioned IOPS SSD (io2) volumes"]
+	quotaInfo.UsageValue = float64(iops)
+
+	ret = append(ret, quotaInfo)
+	return
+}
+
+func (c ServiceChecker) getEbsIo2SizeUsage() (ret []AWSQuotaInfo) {
+	ret = []AWSQuotaInfo{}
+
+	_, size, err := getEbsVolumeDetails("io2")
+	if err != nil {
+		fmt.Printf("failed to retrieve ec2 ebs io2 volumes, %v", err)
+		return
+	}
+	quotaInfo := c.GetAllAppliedQuotas()["Storage for Provisioned IOPS SSD (io2) volumes, in TiB"]
 	quotaInfo.UsageValue = GiBtoTiB(float64(size))
 
 	ret = append(ret, quotaInfo)
