@@ -142,6 +142,94 @@ func TestGetEbsIo1SizeUsageError(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
+func TestGetEbsIo2IopsUsage(t *testing.T) {
+	mockedOutput := ec2.DescribeVolumesOutput{
+		Volumes: []*ec2.Volume{
+			{VolumeId: aws.String("foo"), Iops: aws.Int64(1000), Size: aws.Int64(1024)},
+			{VolumeId: aws.String("bar"), Iops: aws.Int64(1000), Size: aws.Int64(2048)},
+		},
+	}
+	conf.Ec2 = mockedEc2Client{DescribeVolumesPagesRes: mockedOutput}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("ebs", "IOPS for Provisioned IOPS SSD (io2) volumes", float64(10000), false)},
+		nil)
+
+	ebsChecker := NewEbsChecker()
+	svcChecker := ebsChecker.(*ServiceChecker)
+	actual := svcChecker.getEbsIo2IopsUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "ebs", quota.Service)
+	assert.Equal(t, float64(10000), quota.QuotaValue)
+	assert.Equal(t, float64(2000), quota.UsageValue)
+}
+func TestGetEbsIo2IopsUsageError(t *testing.T) {
+	mockedOutput := ec2.DescribeVolumesOutput{
+		Volumes: []*ec2.Volume{
+			{VolumeId: aws.String("foo"), Iops: aws.Int64(1000), Size: aws.Int64(1024)},
+			{VolumeId: aws.String("bar"), Iops: aws.Int64(1000), Size: aws.Int64(2048)},
+		},
+	}
+	conf.Ec2 = mockedEc2Client{DescribeVolumesPagesRes: mockedOutput, DescribeVolumesPagesError: errors.New("test error")}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("ebs", "IOPS for Provisioned IOPS SSD (io2) volumes", float64(10000), false)},
+		nil)
+
+	ebsChecker := NewEbsChecker()
+	svcChecker := ebsChecker.(*ServiceChecker)
+	actual := svcChecker.getEbsIo2IopsUsage()
+
+	expected := []AWSQuotaInfo{}
+	assert.Equal(t, expected, actual)
+}
+
+func TestGetEbsIo2SizeUsage(t *testing.T) {
+	mockedOutput := ec2.DescribeVolumesOutput{
+		Volumes: []*ec2.Volume{
+			{VolumeId: aws.String("foo"), Iops: aws.Int64(1000), Size: aws.Int64(1024)},
+			{VolumeId: aws.String("bar"), Iops: aws.Int64(1000), Size: aws.Int64(2048)},
+		},
+	}
+	conf.Ec2 = mockedEc2Client{DescribeVolumesPagesRes: mockedOutput}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("ebs", "Storage for Provisioned IOPS SSD (io2) volumes, in TiB", float64(50), false)},
+		nil)
+
+	ebsChecker := NewEbsChecker()
+	svcChecker := ebsChecker.(*ServiceChecker)
+	actual := svcChecker.getEbsIo2SizeUsage()
+
+	assert.Len(t, actual, 1)
+	quota := actual[0]
+	assert.Equal(t, "ebs", quota.Service)
+	assert.Equal(t, float64(50), quota.QuotaValue)
+	assert.Equal(t, float64(3), quota.UsageValue)
+}
+func TestGetEbsIo2SizeUsageError(t *testing.T) {
+	mockedOutput := ec2.DescribeVolumesOutput{
+		Volumes: []*ec2.Volume{
+			{VolumeId: aws.String("foo"), Iops: aws.Int64(1000), Size: aws.Int64(1024)},
+			{VolumeId: aws.String("bar"), Iops: aws.Int64(1000), Size: aws.Int64(2048)},
+		},
+	}
+	conf.Ec2 = mockedEc2Client{DescribeVolumesPagesRes: mockedOutput, DescribeVolumesPagesError: errors.New("test error")}
+
+	conf.ServiceQuotas = NewSvcQuotaMockListServiceQuotas(
+		[]*servicequotas.ServiceQuota{NewQuota("ebs", "Storage for Provisioned IOPS SSD (io2) volumes, in TiB", float64(50), false)},
+		nil)
+
+	ebsChecker := NewEbsChecker()
+	svcChecker := ebsChecker.(*ServiceChecker)
+	actual := svcChecker.getEbsIo2SizeUsage()
+
+	expected := []AWSQuotaInfo{}
+	assert.Equal(t, expected, actual)
+}
+
 func TestGetEbsVolumeDetails(t *testing.T) {
 	mockedOutput := ec2.DescribeVolumesOutput{
 		Volumes: []*ec2.Volume{
