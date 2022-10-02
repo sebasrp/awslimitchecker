@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/elasticache"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -30,6 +31,7 @@ type Config struct {
 	Autoscaling    AutoscalingClientInterface
 	Cloudformation CloudformationClientInterface
 	DynamoDb       DynamodbClientInterface
+	Ec2            Ec2ClientInterface
 	Eks            EksClientInterface
 	ElastiCache    ElastiCacheClientInterface
 	Elb            ElbClientInterface   // for classic load balancers
@@ -56,6 +58,7 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 		Autoscaling:    autoscaling.New(&sess),
 		Cloudformation: cloudformation.New(&sess),
 		DynamoDb:       dynamodb.New(&sess),
+		Ec2:            ec2.New(&sess),
 		Eks:            eks.New(&sess),
 		ElastiCache:    elasticache.New(&sess),
 		Elb:            elb.New(&sess),   // for classic load balancers
