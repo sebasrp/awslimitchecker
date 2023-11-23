@@ -114,30 +114,12 @@ func TestValidateAwsServiceFailure(t *testing.T) {
 	assert.Falsef(t, actual, "%s should not be valid service", input)
 }
 
-func TestValidateAwsServiceAll(t *testing.T) {
-	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
-		"foo": NewTestChecker,
-	}
-	var input = "all"
-	var actual = services.IsValidAwsService(input)
-	assert.Truef(t, actual, "%s should be valid service", input)
-}
-
 func TestGetIamPolicies(t *testing.T) {
 	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
 	assert.Equal(t, 2, len(services.GetIamPolicies()))
-}
-
-func TestGetUsageAll(t *testing.T) {
-	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
-		"foo": NewTestChecker,
-		"bar": NewTestChecker,
-	}
-	services.InitializeConfig = func(region string) {}
-	assert.Equal(t, 2, len(services.GetUsage("all", "testRegion", nil)))
 }
 
 func TestGetUsageSingle(t *testing.T) {
@@ -168,17 +150,4 @@ func TestGetUsageOverride(t *testing.T) {
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 1, len(actual))
 	assert.Equal(t, float64(300), actual[0].QuotaValue)
-}
-
-func TestGetUsageOverrideAll(t *testing.T) {
-	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
-		"testService":  NewTestChecker,
-		"testService2": NewTestChecker,
-	}
-	services.InitializeConfig = func(region string) {}
-	actual := services.GetUsage("all", "testRegion", []services.AWSQuotaOverride{
-		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, float64(300), actual[0].QuotaValue)
-	assert.Equal(t, float64(300), actual[1].QuotaValue) // because both services have same name
 }

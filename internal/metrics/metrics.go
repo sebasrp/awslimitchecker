@@ -1,32 +1,79 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"regexp"
+	"strconv"
+
+	"github.com/gobeam/stringy"
+	"github.com/nyambati/aws-service-limits-exporter/internal/services"
+	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"github.com/urfave/cli"
+)
 
 var registry *prometheus.Registry
 
-type metrics struct {
-	acm prometheus.Gauge
+type ServiceConfig struct {
+	Name    string
+	Regions []string
+}
+type Config struct {
+	Services             []ServiceConfig
+	ServiceQuotaOverride map[string]map[string]float64
 }
 
-func Generate(reg prometheus.Registerer) *metrics {
-	m := &metrics{
-		acm: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "cpu_temperature_celsius",
-			Help: "Current temperature of the CPU.",
-		}),
+var config = &Config{}
+
+func CreateMetric(reg prometheus.Registerer, name, help, namespace string) *prometheus.GaugeVec {
+	metric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      name,
+			Help:      help,
+		},
+		[]string{
+			"quota_code",
+			"resource_id",
+			"region",
+			"unit",
+			"is_global",
+		},
+	)
+
+	reg.MustRegister(metric)
+	return metric
+}
+
+func CreateRegistery(context *cli.Context) *prometheus.Registry {
+	err := viper.Unmarshal(&config)
+
+	if err != nil {
+		log.Fatal(err)
 	}
-	reg.MustRegister(m.acm)
-	return m
-}
-
-func CreateRegistery() *prometheus.Registry {
-
 	// Create a non-global registry.
 	registry = prometheus.NewRegistry()
 
-	// Create new metrics and register them using the custom registry.
-	m := Generate(registry)
-	// Set values for the new created metrics.
-	m.acm.Set(65.3)
+	for _, service := range config.Services {
+		generateMetrics(service)
+	}
 	return registry
+}
+
+func cleanMetricName(quotaName string) string {
+	return stringy.New(regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(quotaName, " ")).SnakeCase().ToLower()
+}
+
+func generateMetrics(service ServiceConfig) (metric *prometheus.GaugeVec) {
+	quotaOverrides := []services.AWSQuotaOverride{}
+	for _, region := range service.Regions {
+		usage := services.GetUsage(service.Name, region, quotaOverrides)
+		for _, quotaInfo := range usage {
+			metric = CreateMetric(registry, cleanMetricName(quotaInfo.QuotaName), "", "aws")
+			metric.WithLabelValues(quotaInfo.Quotacode, quotaInfo.ResourceId, region, quotaInfo.Unit, strconv.FormatBool(quotaInfo.Global)).Add(quotaInfo.QuotaValue)
+		}
+	}
+
+	return
+
 }

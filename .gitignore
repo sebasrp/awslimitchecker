@@ -33,3 +33,7 @@
 
 # Ignore code-workspaces
 *.code-workspace
+
+# asqle
+tmp
+config.yaml
