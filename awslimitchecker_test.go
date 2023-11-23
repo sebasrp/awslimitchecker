@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sebasrp/awslimitchecker"
-	"github.com/sebasrp/awslimitchecker/internal/services"
+	awslimitchecker "github.com/nyambati/aws-service-limits-exporter"
+	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -138,10 +138,10 @@ func TestGetUsageAll(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
+	services.InitializeConfig = func(region string) error {
+		return nil
 	}
-	assert.Equal(t, 2, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion", nil)))
+	assert.Equal(t, 2, len(awslimitchecker.GetUsage("all", "testRegion", nil)))
 }
 
 func TestGetUsageSingle(t *testing.T) {
@@ -149,8 +149,8 @@ func TestGetUsageSingle(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
+	services.InitializeConfig = func(region string) error {
+		return nil
 	}
 	assert.Equal(t, 1, len(awslimitchecker.GetUsage("foo", "testProfile", "testRegion", nil)))
 }
@@ -160,8 +160,8 @@ func TestGetUsageSingleWrong(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
+	services.InitializeConfig = func(region string) error {
+		return nil
 	}
 	assert.Equal(t, 0, len(awslimitchecker.GetUsage("boz", "testProfile", "testRegion", nil)))
 }
@@ -170,10 +170,10 @@ func TestGetUsageErrorInit(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, errors.New("test error")
+	services.InitializeConfig = func(region string) error {
+		return errors.New("test error")
 	}
-	assert.Equal(t, 0, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion", nil)))
+	assert.Equal(t, 0, len(awslimitchecker.GetUsage("all", "testRegion", nil)))
 }
 
 func TestGetUsageOverride(t *testing.T) {
@@ -181,10 +181,10 @@ func TestGetUsageOverride(t *testing.T) {
 		"testService":  NewTestChecker,
 		"testService2": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
+	services.InitializeConfig = func(region string) error {
+		return nil
 	}
-	actual := awslimitchecker.GetUsage("testService", "testProfile", "testRegion", []services.AWSQuotaOverride{
+	actual := awslimitchecker.GetUsage("testService", "testRegion", []services.AWSQuotaOverride{
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 1, len(actual))
 	assert.Equal(t, float64(300), actual[0].QuotaValue)
@@ -195,10 +195,10 @@ func TestGetUsageOverrideAll(t *testing.T) {
 		"testService":  NewTestChecker,
 		"testService2": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
+	services.InitializeConfig = func(region string) error {
+		return nil
 	}
-	actual := awslimitchecker.GetUsage("all", "testProfile", "testRegion", []services.AWSQuotaOverride{
+	actual := awslimitchecker.GetUsage("all", "testRegion", []services.AWSQuotaOverride{
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 2, len(actual))
 	assert.Equal(t, float64(300), actual[0].QuotaValue)

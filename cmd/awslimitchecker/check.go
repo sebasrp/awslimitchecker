@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/sebasrp/awslimitchecker"
-	"github.com/sebasrp/awslimitchecker/internal/services"
+	"github.com/nyambati/aws-service-limits-exporter"
+	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -1,10 +1,10 @@
 
 # awslimitchecker
 
-[![codecov](https://codecov.io/gh/sebasrp/awslimitchecker/branch/main/graph/badge.svg?token=Y5AOHU08FU)](https://codecov.io/gh/sebasrp/awslimitchecker)
-[![license](https://img.shields.io/github/license/sebasrp/awslimitchecker)](https://tldrlegal.com/license/mit-license)
-[![CI](https://github.com/sebasrp/awslimitchecker/actions/workflows/workflow.yml/badge.svg)](https://github.com/sebasrp/awslimitchecker/actions/workflows/workflow.yml)
-[![go Report Card](https://goreportcard.com/badge/github.com/sebasrp/awslimitchecker)](https://goreportcard.com/report/github.com/sebasrp/awslimitchecker)
+[![codecov](https://codecov.io/gh/nyambati/aws-service-limits-exporter/branch/main/graph/badge.svg?token=Y5AOHU08FU)](https://codecov.io/gh/nyambati/aws-service-limits-exporter)
+[![license](https://img.shields.io/github/license/nyambati/aws-service-limits-exporter)](https://tldrlegal.com/license/mit-license)
+[![CI](https://github.com/nyambati/aws-service-limits-exporter/actions/workflows/workflow.yml/badge.svg)](https://github.com/nyambati/aws-service-limits-exporter/actions/workflows/workflow.yml)
+[![go Report Card](https://goreportcard.com/badge/github.com/nyambati/aws-service-limits-exporter)](https://goreportcard.com/report/github.com/nyambati/aws-service-limits-exporter)
 
 Simple module to programatically retrieve your AWS account limits (whether they are supporter by servicequotas or not). It also provide a lightweight cli program to access the data.
 
@@ -15,7 +15,7 @@ Not many services are currently supported, but it's fairly simple to add them - 
 
 ## Features
 
-* Check current AWS resource usage against AWS ServiceQuota limits (see [wiki - Supported Quotas](https://github.com/sebasrp/awslimitchecker/wiki/Supported-Quotas) for complete list)
+* Check current AWS resource usage against AWS ServiceQuota limits (see [wiki - Supported Quotas](https://github.com/nyambati/aws-service-limits-exporter/wiki/Supported-Quotas) for complete list)
 * Retrieves current usage
 * Compare current usage to limits
 * When available, retrieves applied (different than default) values

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -46,10 +45,10 @@ type Config struct {
 
 var InitializeConfig = initializeConfig
 
-func initializeConfig(awsprofile string, region string) (*Config, error) {
-	sess, err := createAwsSession(awsprofile, region)
+func initializeConfig(region string) error {
+	sess, err := createAwsSession(region)
 	if err != nil {
-		return &Config{}, fmt.Errorf("unable to create a session to aws with error: %v", err)
+		return fmt.Errorf("unable to create a session to aws with error: %v", err)
 	}
 
 	conf = &Config{
@@ -74,11 +73,8 @@ func initializeConfig(awsprofile string, region string) (*Config, error) {
 	return conf, nil
 }
 
-func createAwsSession(awsprofile string, region string) (session.Session, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewSharedCredentials("", awsprofile)},
-	)
+func createAwsSession(region string) (session.Session, error) {
+	sess, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 	if err != nil {
 		fmt.Printf("Unable to create AWS session, %v", err)
 	}

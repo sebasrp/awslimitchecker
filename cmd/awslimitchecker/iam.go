@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/sebasrp/awslimitchecker"
+	"github.com/nyambati/aws-service-limits-exporter"
 	"github.com/spf13/cobra"
 )
 

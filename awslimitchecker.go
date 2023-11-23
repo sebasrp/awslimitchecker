@@ -1,9 +1,9 @@
 package awslimitchecker
 
 import (
-	"fmt"
+	"log"
 
-	"github.com/sebasrp/awslimitchecker/internal/services"
+	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 )
 
 var SupportedAwsServices = map[string]func() services.Svcquota{
@@ -22,24 +22,36 @@ var SupportedAwsServices = map[string]func() services.Svcquota{
 	"sns":            services.NewSnsChecker,
 }
 
-func GetUsage(awsService string, awsprofile string, region string, overrides []services.AWSQuotaOverride) (ret []services.AWSQuotaInfo) {
-	_, err := services.InitializeConfig(awsprofile, region)
+// GetUsage is a function that returns the usage information of a given AWS service in a given region.
+// It takes three parameters: awsService, region, and overrides.
+// awsService is a string that specifies the name of the AWS service to query.
+// region is a string that specifies the AWS region to use.
+// overrides is a slice of AWSQuotaOverride structs that defines the custom quotas to apply.
+// It returns a slice of AWSQuotaInfo structs that contains the usage data for the service.
+
+func GetUsage(awsService string, region string, overrides []services.AWSQuotaOverride) (ret []services.AWSQuotaInfo) {
+	// Initialize the AWS session with the given region
+	err := services.InitializeConfig(region)
 	if err != nil {
-		fmt.Printf("Unable to create AWS session, %v", err)
+		// Log the error and return
+		log.Printf("Unable to create AWS session, %v", err)
 		return
 	}
-
-	if awsService == "all" {
-		for _, checker := range SupportedAwsServices {
-			service := checker()
-			service.SetQuotasOverride(overrides)
-			ret = append(ret, service.GetUsage()...)
-		}
-	} else if val, ok := SupportedAwsServices[awsService]; ok {
-		service := val()
+	// Check the value of awsService and create the corresponding service instance
+	switch getServiceChecker, ok := SupportedAwsServices[awsService]; {
+	case ok:
+		// Create the service instance using the value function
+		service := getServiceChecker()
+		// Set the quotas override for the service
 		service.SetQuotasOverride(overrides)
+		// Get the usage data for the service
 		ret = service.GetUsage()
+	default:
+		// Log the error and return
+		log.Printf("Unsupported AWS service, %v", awsService)
+		return
 	}
+	// Return the usage data
 	return
 }
 
@@ -52,9 +64,6 @@ func GetIamPolicies() (ret []string) {
 }
 
 func IsValidAwsService(service string) bool {
-	if _, ok := SupportedAwsServices[service]; ok || service == "all" {
-		return true
-	} else {
-		return false
-	}
+	_, ok := SupportedAwsServices[service]
+	return ok
 }
