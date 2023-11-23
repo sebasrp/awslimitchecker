@@ -1,7 +1,6 @@
 package awslimitchecker_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -138,9 +137,7 @@ func TestGetUsageAll(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(region string) error {
-		return nil
-	}
+	services.InitializeConfig = func(region string) {}
 	assert.Equal(t, 2, len(awslimitchecker.GetUsage("all", "testRegion", nil)))
 }
 
@@ -149,9 +146,7 @@ func TestGetUsageSingle(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(region string) error {
-		return nil
-	}
+	services.InitializeConfig = func(region string) {}
 	assert.Equal(t, 1, len(awslimitchecker.GetUsage("foo", "testRegion", nil)))
 }
 
@@ -160,20 +155,8 @@ func TestGetUsageSingleWrong(t *testing.T) {
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(region string) error {
-		return nil
-	}
+	services.InitializeConfig = func(region string) {}
 	assert.Equal(t, 0, len(awslimitchecker.GetUsage("boz", "testRegion", nil)))
-}
-func TestGetUsageErrorInit(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.ServiceQuota{
-		"foo": NewTestChecker,
-		"bar": NewTestChecker,
-	}
-	services.InitializeConfig = func(region string) error {
-		return errors.New("test error")
-	}
-	assert.Equal(t, 0, len(awslimitchecker.GetUsage("all", "testRegion", nil)))
 }
 
 func TestGetUsageOverride(t *testing.T) {
@@ -181,9 +164,7 @@ func TestGetUsageOverride(t *testing.T) {
 		"testService":  NewTestChecker,
 		"testService2": NewTestChecker,
 	}
-	services.InitializeConfig = func(region string) error {
-		return nil
-	}
+	services.InitializeConfig = func(region string) {}
 	actual := awslimitchecker.GetUsage("testService", "testRegion", []services.AWSQuotaOverride{
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 1, len(actual))
@@ -195,9 +176,7 @@ func TestGetUsageOverrideAll(t *testing.T) {
 		"testService":  NewTestChecker,
 		"testService2": NewTestChecker,
 	}
-	services.InitializeConfig = func(region string) error {
-		return nil
-	}
+	services.InitializeConfig = func(region string) {}
 	actual := awslimitchecker.GetUsage("all", "testRegion", []services.AWSQuotaOverride{
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 2, len(actual))

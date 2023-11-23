@@ -31,12 +31,7 @@ var SupportedAwsServices = map[string]func() services.ServiceQuota{
 
 func GetUsage(service string, region string, overrides []services.AWSQuotaOverride) (ret []services.AWSQuotaInfo) {
 	// Initialize the AWS session with the given region
-	err := services.InitializeConfig(region)
-	if err != nil {
-		// Log the error and return
-		log.Printf("Unable to create AWS session, %v", err)
-		return
-	}
+	services.InitializeConfig(region)
 	// Check the value of awsService and create the corresponding service instance
 	switch getServiceChecker, ok := SupportedAwsServices[service]; {
 	case ok:
