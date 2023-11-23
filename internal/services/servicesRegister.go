@@ -1,25 +1,23 @@
-package awslimitchecker
+package services
 
 import (
 	"log"
-
-	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 )
 
-var SupportedAwsServices = map[string]func() services.ServiceQuota{
-	"acm":            services.NewAcmChecker,
-	"autoscaling":    services.NewAutoscalingChecker,
-	"cloudformation": services.NewCloudformationChecker,
-	"dynamodb":       services.NewDynamoDbChecker,
-	"ebs":            services.NewEbsChecker,
-	"eks":            services.NewEksChecker,
-	"elasticache":    services.NewElastiCacheChecker,
-	"elb":            services.NewElbChecker,
-	"iam":            services.NewIamChecker,
-	"kinesis":        services.NewKinesisChecker,
-	"rds":            services.NewRdsChecker,
-	"s3":             services.NewS3Checker,
-	"sns":            services.NewSnsChecker,
+var SupportedAwsServices = map[string]func() ServiceQuota{
+	"acm":            NewAcmChecker,
+	"autoscaling":    NewAutoscalingChecker,
+	"cloudformation": NewCloudformationChecker,
+	"dynamodb":       NewDynamoDbChecker,
+	"ebs":            NewEbsChecker,
+	"eks":            NewEksChecker,
+	"elasticache":    NewElastiCacheChecker,
+	"elb":            NewElbChecker,
+	"iam":            NewIamChecker,
+	"kinesis":        NewKinesisChecker,
+	"rds":            NewRdsChecker,
+	"s3":             NewS3Checker,
+	"sns":            NewSnsChecker,
 }
 
 // GetUsage is a function that returns the usage information of a given AWS service in a given region.
@@ -29,9 +27,9 @@ var SupportedAwsServices = map[string]func() services.ServiceQuota{
 // overrides is a slice of AWSQuotaOverride structs that defines the custom quotas to apply.
 // It returns a slice of AWSQuotaInfo structs that contains the usage data for the service.
 
-func GetUsage(service string, region string, overrides []services.AWSQuotaOverride) (ret []services.AWSQuotaInfo) {
+func GetUsage(service string, region string, overrides []AWSQuotaOverride) (ret []AWSQuotaInfo) {
 	// Initialize the AWS session with the given region
-	services.InitializeConfig(region)
+	InitializeConfig(region)
 	// Check the value of awsService and create the corresponding service instance
 	switch getServiceChecker, ok := SupportedAwsServices[service]; {
 	case ok:
