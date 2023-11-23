@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/nyambati/aws-service-limits-exporter"
+	awslimitchecker "github.com/nyambati/aws-service-limits-exporter"
 	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,7 +66,7 @@ var check = &cobra.Command{
 			}
 		}
 
-		usage := awslimitchecker.GetUsage(awsService, awsProfile, region, quotaOverrides)
+		usage := awslimitchecker.GetUsage(awsService, region, quotaOverrides)
 		sort.Slice(usage[:], func(i, j int) bool {
 			return usage[i].Service+usage[i].QuotaName < usage[j].Service+usage[j].QuotaName
 		})

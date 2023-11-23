@@ -21,7 +21,7 @@ func (m mockedIamClient) GetAccountSummary(input *iam.GetAccountSummaryInput) (*
 }
 
 func TestNewIamCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewIamChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewIamChecker())
 }
 
 func TestGetIamAccountQuotas(t *testing.T) {

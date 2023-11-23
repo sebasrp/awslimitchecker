@@ -23,7 +23,7 @@ func (m mockedAcmClient) ListCertificatesPages(input *acm.ListCertificatesInput,
 }
 
 func TestNewAcmCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewAcmChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewAcmChecker())
 }
 
 func TestGetAcmCertificatesUsage(t *testing.T) {

@@ -47,6 +47,7 @@ var InitializeConfig = initializeConfig
 
 func initializeConfig(region string) error {
 	sess, err := createAwsSession(region)
+
 	if err != nil {
 		return fmt.Errorf("unable to create a session to aws with error: %v", err)
 	}
@@ -70,7 +71,7 @@ func initializeConfig(region string) error {
 		Sns:            sns.New(&sess),
 	}
 
-	return conf, nil
+	return nil
 }
 
 func createAwsSession(region string) (session.Session, error) {

@@ -10,7 +10,7 @@ type AutoscalingClientInterface interface {
 	DescribeAccountLimits(input *autoscaling.DescribeAccountLimitsInput) (*autoscaling.DescribeAccountLimitsOutput, error)
 }
 
-func NewAutoscalingChecker() Svcquota {
+func NewAutoscalingChecker() ServiceQuota {
 	serviceCode := "autoscaling"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Auto Scaling groups per region":   ServiceChecker.getAutoscalingGroupsUsage,

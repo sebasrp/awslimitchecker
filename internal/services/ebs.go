@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func NewEbsChecker() Svcquota {
+func NewEbsChecker() ServiceQuota {
 	serviceCode := "ebs"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Snapshots per Region":                                       ServiceChecker.getEbsSnapshotsUsage,

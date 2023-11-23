@@ -10,7 +10,7 @@ type DynamodbClientInterface interface {
 	ListTablesPages(input *dynamodb.ListTablesInput, fn func(*dynamodb.ListTablesOutput, bool) bool) error
 }
 
-func NewDynamoDbChecker() Svcquota {
+func NewDynamoDbChecker() ServiceQuota {
 	serviceCode := "dynamodb"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Maximum number of tables": ServiceChecker.getDynanoDBTableUsage,

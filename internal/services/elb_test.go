@@ -47,7 +47,7 @@ func (m mockedElbv2Client) DescribeLoadBalancersPages(input *elbv2.DescribeLoadB
 }
 
 func TestNewElbCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewElbChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewElbChecker())
 }
 
 func TestGetElbAccountQuotas(t *testing.T) {

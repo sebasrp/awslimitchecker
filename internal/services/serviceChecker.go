@@ -27,7 +27,7 @@ func NewServiceChecker(
 	quotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo),
 	permissions []string,
 
-) Svcquota {
+) ServiceQuota {
 
 	region := ""
 	if conf.Session != nil {

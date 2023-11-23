@@ -23,7 +23,7 @@ func (m mockedElastiCacheClient) DescribeCacheClustersPages(input *elasticache.D
 }
 
 func TestNewElastiCacheCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewElastiCacheChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewElastiCacheChecker())
 }
 
 func TestGetElastiCacheNodesUsage(t *testing.T) {

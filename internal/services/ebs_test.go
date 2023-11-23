@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewEbsCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewEbsChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewEbsChecker())
 }
 
 func TestGetEbsSnapshotsUsage(t *testing.T) {

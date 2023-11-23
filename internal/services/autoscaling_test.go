@@ -21,7 +21,7 @@ func (m mockedAutoscalingDescribeAccountLimitsMsg) DescribeAccountLimits(input *
 }
 
 func TestNewAutoscalingCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewAutoscalingChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewAutoscalingChecker())
 }
 
 func TestGetAutoscalingGroupsUsage(t *testing.T) {

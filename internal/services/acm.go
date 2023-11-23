@@ -10,7 +10,7 @@ type AcmClientInterface interface {
 	ListCertificatesPages(input *acm.ListCertificatesInput, fn func(*acm.ListCertificatesOutput, bool) bool) error
 }
 
-func NewAcmChecker() Svcquota {
+func NewAcmChecker() ServiceQuota {
 	serviceCode := "acm"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"ACM certificates": ServiceChecker.getAcmCertificatesUsage,

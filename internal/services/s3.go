@@ -10,7 +10,7 @@ type S3ClientInterface interface {
 	ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
 }
 
-func NewS3Checker() Svcquota {
+func NewS3Checker() ServiceQuota {
 	serviceCode := "s3"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Buckets": ServiceChecker.getS3BucketUsage,
