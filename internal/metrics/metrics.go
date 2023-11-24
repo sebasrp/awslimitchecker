@@ -18,6 +18,7 @@ type ServiceConfig struct {
 	Name    string
 	Regions []string
 }
+
 type Config struct {
 	Services             []ServiceConfig
 	ServiceQuotaOverride map[string]map[string]float64
@@ -55,7 +56,7 @@ func CreateRegistery(context *cli.Context) *prometheus.Registry {
 	registry = prometheus.NewRegistry()
 
 	for _, service := range config.Services {
-		generateMetrics(service)
+		generateMetrics(service, config.ServiceQuotaOverride)
 	}
 	return registry
 }
@@ -64,8 +65,8 @@ func cleanMetricName(quotaName string) string {
 	return stringy.New(regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(quotaName, " ")).SnakeCase().ToLower()
 }
 
-func generateMetrics(service ServiceConfig) (metric *prometheus.GaugeVec) {
-	quotaOverrides := []services.AWSQuotaOverride{}
+func generateMetrics(service ServiceConfig, overrides map[string]map[string]float64) (metric *prometheus.GaugeVec) {
+	quotaOverrides := getQuotaOverrides(overrides)
 	for _, region := range service.Regions {
 		usage := services.GetUsage(service.Name, region, quotaOverrides)
 		for _, quotaInfo := range usage {
@@ -76,4 +77,15 @@ func generateMetrics(service ServiceConfig) (metric *prometheus.GaugeVec) {
 
 	return
 
+}
+
+func getQuotaOverrides(overrides map[string]map[string]float64) []services.AWSQuotaOverride {
+	quotaOverrides := []services.AWSQuotaOverride{}
+	for svcName, svc := range overrides {
+		for quotaName, quota := range svc {
+			quotaOverrides = append(quotaOverrides, services.AWSQuotaOverride{Service: svcName, QuotaName: quotaName, QuotaValue: quota})
+		}
+	}
+
+	return quotaOverrides
 }
