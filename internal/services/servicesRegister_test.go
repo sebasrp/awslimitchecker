@@ -1,12 +1,10 @@
-package awslimitchecker_test
+package services_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/sebasrp/awslimitchecker"
-	"github.com/sebasrp/awslimitchecker/internal/services"
+	"github.com/nyambati/aws-service-limits-exporter/internal/services"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +23,7 @@ type TestChecker struct {
 	requiredPermissions []string
 }
 
-func NewTestChecker() services.Svcquota {
+func NewTestChecker() services.ServiceQuota {
 	c := &TestChecker{
 		serviceCode: "testService",
 		region:      "testRegion",
@@ -99,108 +97,57 @@ func (c TestChecker) GetRequiredPermissions() []string {
 }
 
 func TestValidateAwsServiceSuccess(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 	}
 	var input = "foo"
-	var actual = awslimitchecker.IsValidAwsService(input)
+	var actual = services.IsValidAwsService(input)
 	assert.Truef(t, actual, "%s should be valid service", input)
 }
 
 func TestValidateAwsServiceFailure(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 	}
 	var input = "bar"
-	var actual = awslimitchecker.IsValidAwsService(input)
+	var actual = services.IsValidAwsService(input)
 	assert.Falsef(t, actual, "%s should not be valid service", input)
 }
 
-func TestValidateAwsServiceAll(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
-		"foo": NewTestChecker,
-	}
-	var input = "all"
-	var actual = awslimitchecker.IsValidAwsService(input)
-	assert.Truef(t, actual, "%s should be valid service", input)
-}
-
 func TestGetIamPolicies(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	assert.Equal(t, 2, len(awslimitchecker.GetIamPolicies()))
-}
-
-func TestGetUsageAll(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
-		"foo": NewTestChecker,
-		"bar": NewTestChecker,
-	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
-	}
-	assert.Equal(t, 2, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion", nil)))
+	assert.Equal(t, 2, len(services.GetIamPolicies()))
 }
 
 func TestGetUsageSingle(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
-	}
-	assert.Equal(t, 1, len(awslimitchecker.GetUsage("foo", "testProfile", "testRegion", nil)))
+	services.InitializeConfig = func(region string) {}
+	assert.Equal(t, 1, len(services.GetUsage("foo", "testRegion", nil)))
 }
 
 func TestGetUsageSingleWrong(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"foo": NewTestChecker,
 		"bar": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
-	}
-	assert.Equal(t, 0, len(awslimitchecker.GetUsage("boz", "testProfile", "testRegion", nil)))
-}
-func TestGetUsageErrorInit(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
-		"foo": NewTestChecker,
-		"bar": NewTestChecker,
-	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, errors.New("test error")
-	}
-	assert.Equal(t, 0, len(awslimitchecker.GetUsage("all", "testProfile", "testRegion", nil)))
+	services.InitializeConfig = func(region string) {}
+	assert.Equal(t, 0, len(services.GetUsage("boz", "testRegion", nil)))
 }
 
 func TestGetUsageOverride(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
+	services.SupportedAwsServices = map[string]func() services.ServiceQuota{
 		"testService":  NewTestChecker,
 		"testService2": NewTestChecker,
 	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
-	}
-	actual := awslimitchecker.GetUsage("testService", "testProfile", "testRegion", []services.AWSQuotaOverride{
+	services.InitializeConfig = func(region string) {}
+	actual := services.GetUsage("testService", "testRegion", []services.AWSQuotaOverride{
 		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
 	assert.Equal(t, 1, len(actual))
 	assert.Equal(t, float64(300), actual[0].QuotaValue)
-}
-
-func TestGetUsageOverrideAll(t *testing.T) {
-	awslimitchecker.SupportedAwsServices = map[string]func() services.Svcquota{
-		"testService":  NewTestChecker,
-		"testService2": NewTestChecker,
-	}
-	services.InitializeConfig = func(awsprofile, region string) (*services.Config, error) {
-		return &services.Config{}, nil
-	}
-	actual := awslimitchecker.GetUsage("all", "testProfile", "testRegion", []services.AWSQuotaOverride{
-		{Service: "testService", QuotaName: "testQuota", QuotaValue: float64(300)}})
-	assert.Equal(t, 2, len(actual))
-	assert.Equal(t, float64(300), actual[0].QuotaValue)
-	assert.Equal(t, float64(300), actual[1].QuotaValue) // because both services have same name
 }

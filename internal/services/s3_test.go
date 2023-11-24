@@ -21,7 +21,7 @@ func (m mockedS3ClientListBucketsMsg) ListBuckets(input *s3.ListBucketsInput) (*
 }
 
 func TestNewS3CheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewS3Checker())
+	require.Implements(t, (*ServiceQuota)(nil), NewS3Checker())
 }
 
 func TestGetS3BucketUsage(t *testing.T) {

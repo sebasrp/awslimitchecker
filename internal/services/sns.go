@@ -11,7 +11,7 @@ type SnsClientInterface interface {
 	ListSubscriptionsPages(input *sns.ListSubscriptionsInput, fn func(*sns.ListSubscriptionsOutput, bool) bool) error
 }
 
-func NewSnsChecker() Svcquota {
+func NewSnsChecker() ServiceQuota {
 	serviceCode := "sns"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Topics per Account":                ServiceChecker.getSnsTopicsUsage,

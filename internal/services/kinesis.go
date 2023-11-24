@@ -10,7 +10,7 @@ type KinesisClientInterface interface {
 	DescribeLimits(input *kinesis.DescribeLimitsInput) (*kinesis.DescribeLimitsOutput, error)
 }
 
-func NewKinesisChecker() Svcquota {
+func NewKinesisChecker() ServiceQuota {
 	serviceCode := "kinesis"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Shards per Region":                  ServiceChecker.getKinesisShardUsage,

@@ -11,7 +11,7 @@ type EksClientInterface interface {
 	ListNodegroupsPages(input *eks.ListNodegroupsInput, fn func(*eks.ListNodegroupsOutput, bool) bool) error
 }
 
-func NewEksChecker() Svcquota {
+func NewEksChecker() ServiceQuota {
 	serviceCode := "eks"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Clusters":                        ServiceChecker.getEKSClusterUsage,

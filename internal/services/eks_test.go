@@ -34,7 +34,7 @@ func (m mockedEksClient) ListNodegroupsPages(
 }
 
 func TestNewEksCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewEksChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewEksChecker())
 }
 
 func TestGetEKSClusterUsage(t *testing.T) {

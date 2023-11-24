@@ -22,7 +22,7 @@ func (m mockedRdsClient) DescribeAccountAttributes(input *rds.DescribeAccountAtt
 }
 
 func TestNewRdsCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewRdsChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewRdsChecker())
 }
 
 func TestGetRdsAccountQuotas(t *testing.T) {

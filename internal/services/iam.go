@@ -10,7 +10,7 @@ type IamClientInterface interface {
 	GetAccountSummary(input *iam.GetAccountSummaryInput) (*iam.GetAccountSummaryOutput, error)
 }
 
-func NewIamChecker() Svcquota {
+func NewIamChecker() ServiceQuota {
 	serviceCode := "iam"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Roles per Account":               ServiceChecker.getIamRolesUsage,

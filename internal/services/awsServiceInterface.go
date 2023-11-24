@@ -18,7 +18,7 @@ type AWSQuotaOverride struct {
 	QuotaValue float64 // the quota value
 }
 
-type Svcquota interface {
+type ServiceQuota interface {
 	// Get Usage retrieve the quotas and usage for the given service
 	GetUsage() []AWSQuotaInfo
 

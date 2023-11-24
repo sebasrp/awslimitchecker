@@ -31,7 +31,7 @@ func (m mockedSnsClient) ListSubscriptionsPages(
 }
 
 func TestNewSnsCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewSnsChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewSnsChecker())
 }
 
 func TestGetSnsTopicsUsage(t *testing.T) {

@@ -1,10 +1,7 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/acm"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -44,43 +41,33 @@ type Config struct {
 	Sns            SnsClientInterface
 }
 
-var InitializeConfig = initializeConfig
-
-func initializeConfig(awsprofile string, region string) (*Config, error) {
-	sess, err := createAwsSession(awsprofile, region)
-	if err != nil {
-		return &Config{}, fmt.Errorf("unable to create a session to aws with error: %v", err)
-	}
+var InitializeConfig = func(region string) {
+	sess := session.Must(
+		session.NewSession(
+			&aws.Config{
+				Region:                        aws.String(region),
+				CredentialsChainVerboseErrors: aws.Bool(true),
+				MaxRetries:                    aws.Int(5),
+			},
+		),
+	)
 
 	conf = &Config{
-		Session:        &sess,
-		Acm:            acm.New(&sess),
-		Autoscaling:    autoscaling.New(&sess),
-		Cloudformation: cloudformation.New(&sess),
-		DynamoDb:       dynamodb.New(&sess),
-		Ec2:            ec2.New(&sess),
-		Eks:            eks.New(&sess),
-		ElastiCache:    elasticache.New(&sess),
-		Elb:            elb.New(&sess),   // for classic load balancers
-		Elbv2:          elbv2.New(&sess), // for ALB and NLB load balancers
-		Iam:            iam.New(&sess),
-		Kinesis:        kinesis.New(&sess),
-		Rds:            rds.New(&sess),
-		S3:             s3.New(&sess),
-		ServiceQuotas:  servicequotas.New(&sess),
-		Sns:            sns.New(&sess),
+		Session:        sess,
+		Acm:            acm.New(sess),
+		Autoscaling:    autoscaling.New(sess),
+		Cloudformation: cloudformation.New(sess),
+		DynamoDb:       dynamodb.New(sess),
+		Ec2:            ec2.New(sess),
+		Eks:            eks.New(sess),
+		ElastiCache:    elasticache.New(sess),
+		Elb:            elb.New(sess),   // for classic load balancers
+		Elbv2:          elbv2.New(sess), // for ALB and NLB load balancers
+		Iam:            iam.New(sess),
+		Kinesis:        kinesis.New(sess),
+		Rds:            rds.New(sess),
+		S3:             s3.New(sess),
+		ServiceQuotas:  servicequotas.New(sess),
+		Sns:            sns.New(sess),
 	}
-
-	return conf, nil
-}
-
-func createAwsSession(awsprofile string, region string) (session.Session, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewSharedCredentials("", awsprofile)},
-	)
-	if err != nil {
-		fmt.Printf("Unable to create AWS session, %v", err)
-	}
-	return *sess, err
 }

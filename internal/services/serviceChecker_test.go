@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewTestChecker(supportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)) Svcquota {
+func NewTestChecker(supportedQuotas map[string]func(ServiceChecker) (ret []AWSQuotaInfo)) ServiceQuota {
 	serviceCode := "testService"
 	requiredPermissions := []string{"test:ListTestIAM"}
 	return NewServiceChecker(serviceCode, supportedQuotas, requiredPermissions)
 }
 
 func TestNewServiceCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewTestChecker(nil))
+	require.Implements(t, (*ServiceQuota)(nil), NewTestChecker(nil))
 }
 
 func TestGetUsage(t *testing.T) {

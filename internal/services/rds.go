@@ -11,7 +11,7 @@ type RdsClientInterface interface {
 	DescribeAccountAttributes(input *rds.DescribeAccountAttributesInput) (*rds.DescribeAccountAttributesOutput, error)
 }
 
-func NewRdsChecker() Svcquota {
+func NewRdsChecker() ServiceQuota {
 	serviceCode := "rds"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"DB instances":          ServiceChecker.getRdsInstancesCountUsage,

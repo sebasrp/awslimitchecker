@@ -22,7 +22,7 @@ func (m mockedKinesisDescribeLimitsMsg) DescribeLimits(input *kinesis.DescribeLi
 }
 
 func TestNewKinesisCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewKinesisChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewKinesisChecker())
 }
 
 func TestGetKinesisShardUsage(t *testing.T) {

@@ -23,7 +23,7 @@ func (m mockedCloudformationClient) ListStacksPages(input *cloudformation.ListSt
 }
 
 func TestNewCloudformationCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewCloudformationChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewCloudformationChecker())
 }
 
 func TestGetCloudformationStackUsage(t *testing.T) {

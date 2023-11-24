@@ -11,7 +11,7 @@ type CloudformationClientInterface interface {
 	ListStacksPages(input *cloudformation.ListStacksInput, fn func(*cloudformation.ListStacksOutput, bool) bool) error
 }
 
-func NewCloudformationChecker() Svcquota {
+func NewCloudformationChecker() ServiceQuota {
 	serviceCode := "cloudformation"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Stack count": ServiceChecker.getCloudformationStackUsage,

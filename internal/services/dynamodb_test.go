@@ -25,7 +25,7 @@ func (m mockedListTablesPagesMsgs) ListTablesPages(
 }
 
 func TestNewDynamoDbCheckerImpl(t *testing.T) {
-	require.Implements(t, (*Svcquota)(nil), NewDynamoDbChecker())
+	require.Implements(t, (*ServiceQuota)(nil), NewDynamoDbChecker())
 }
 
 func TestGetDynanoDBTableUsage(t *testing.T) {

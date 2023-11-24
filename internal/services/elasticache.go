@@ -10,7 +10,7 @@ type ElastiCacheClientInterface interface {
 	DescribeCacheClustersPages(input *elasticache.DescribeCacheClustersInput, fn func(*elasticache.DescribeCacheClustersOutput, bool) bool) error
 }
 
-func NewElastiCacheChecker() Svcquota {
+func NewElastiCacheChecker() ServiceQuota {
 	serviceCode := "elasticache"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Nodes per Region": ServiceChecker.getElastiCacheNodesUsage,

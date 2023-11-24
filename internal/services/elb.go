@@ -20,7 +20,7 @@ type Elbv2ClientInterface interface {
 	DescribeLoadBalancersPages(input *elbv2.DescribeLoadBalancersInput, fn func(*elbv2.DescribeLoadBalancersOutput, bool) bool) error
 }
 
-func NewElbChecker() Svcquota {
+func NewElbChecker() ServiceQuota {
 	serviceCode := "elasticloadbalancing"
 	supportedQuotas := map[string]func(ServiceChecker) (ret []AWSQuotaInfo){
 		"Classic Load Balancers per Region":     ServiceChecker.getElbClassicLoadBalancerUsage,
