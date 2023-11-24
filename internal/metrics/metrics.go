@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gobeam/stringy"
-	"github.com/nyambati/aws-service-limits-exporter/internal/services"
+	"github.com/nyambati/asqe/internal/services"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

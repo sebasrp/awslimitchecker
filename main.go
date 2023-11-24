@@ -1,6 +1,6 @@
 package main
 
-import "github.com/nyambati/aws-service-limits-exporter/cmd"
+import "github.com/nyambati/asqe/cmd"
 
 func main() {
 	cmd.RootCmd()

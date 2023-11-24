@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nyambati/aws-service-limits-exporter/internal/metrics"
+	"github.com/nyambati/asqe/internal/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )

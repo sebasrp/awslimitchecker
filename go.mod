@@ -1,4 +1,4 @@
-module github.com/nyambati/aws-service-limits-exporter
+module github.com/nyambati/asqe
 
 go 1.19
 

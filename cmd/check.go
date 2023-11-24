@@ -8,8 +8,8 @@ package cmd
 // 	"sort"
 // 	"strconv"
 
-// 	awslimitchecker "github.com/nyambati/aws-service-limits-exporter"
-// 	"github.com/nyambati/aws-service-limits-exporter/internal/services"
+// 	awslimitchecker "github.com/nyambati/asqe"
+// 	"github.com/nyambati/asqe/internal/services"
 // 	"github.com/spf13/cobra"
 // 	"github.com/spf13/viper"
 // )
